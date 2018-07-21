@@ -1,0 +1,882 @@
+All routes will return a 400 code upon error and possibly a JSON Object with {message: "message"}
+
+Also all routes will return a 200 code upon success.
+
+////////////////////////////////////////////////////////////
+//                  League Admin routes                   //
+////////////////////////////////////////////////////////////
+
+app.post('/league/register', league.register);
+	// First emails Chris' email upon completion. Passwords are emailed upon youthdraft validation.
+	Expects:  Also expects three files as either csv or xlsx.  The fieldnames are players, teams, and coaches
+		{
+			"email": "moo@moo.com",
+			"firstName": "Bob",
+			"lastName": "Ross",
+			"leagueName": "Rivercats",
+			"phoneNumber": "123-456-7890",
+			"city": "Mehicos",
+			"state": "CA",
+			"tryouts": [ // up to five
+				{
+					"date": "2017-12-5", // YYYY-MM-DD
+					"address": "2215 Mine Street, Mine CA 95835" // String
+				},
+				{
+					"date": "2017-12-8",
+					"address": "2215 Mine Street, Mine CA 95835"
+				}
+			]
+		}
+	returns: 200 code.
+
+app.get('/leagues', league.getAll);
+	// to get all the leagues for selecting from the drop down
+	returns:
+  [
+	  {
+	      "leagueName": "Rivercats",
+	      "city": "Mehicos",
+	      "state": "CA"
+	  },
+	  {
+	      "leagueName": "Giants",
+	      "city": "Mehi",
+	      "state": "CA"
+	  }
+	]
+
+app.post('/api/league/validate', league.getAll);
+	// for youthdraft to verify a league
+	// sends an email with a temporary password
+	expects: special JWT sent via email link
+	returns: 200 code
+
+app.post('/api/league/reject', league.reject);
+	// for youthdraft to reject and delete a league
+	// sends an email with a rejection letter.
+	expects: special JWT sent via email link
+	returns: 200 code
+
+app.post('/league/reset', league.reset);
+	// Resets a league admin's password and sends it out to the given email address
+	// Also takes a second or two to reply.  Emails seem to take a while.
+	expects:
+		{
+			"email": "mehs@mell.com",
+			"leagueName": "Giants", // use the leagueName from the GET /leagues route
+			"city": "Mehi", // use the city from the GET /leagues route
+			"state": "CA" // use the state from the GET /leagues route
+		}
+	returns: 200 code
+
+app.post('/league/login', league.login);
+	expects:
+		{
+			"email": "moo@moo.com",
+			"password": "HRh1jQyrNa",
+			"leagueName": "Giants", // use the leagueName from the GET /leagues route
+			"city": "Mehi", // use the city from the GET /leagues route
+			"state": "CA" // use the state from the GET /leagues route
+		}
+	returns: JWT of league Admin
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MDk3NzQ5NDIsImlkIjoiQjIxODA2OTBDMTIxMTFFN0IxRTU5M0YwMzRFQjExMEEifQ.Q7VAHt44BMy2NY9sihd-kHNzxDcsk2hAz6AkqLMkaLM"
+
+app.get('/api/league', league.get);
+	// to get all the info connected to the league account
+	expects: JWT of a league admin in the HTML header
+	returns:
+		{
+	    "email": "moo@moo.com",
+	    "firstName": "Bob",
+	    "lastName": "Ross",
+	    "leagueName": "Rivercats",
+	    "phoneNumber": "123-456-7890",
+	    "city": "Mehicos",
+	    "state": "CA"
+		}
+
+app.put('/api/league', league.update);
+	// update the league admin profile
+	expects: JWT of a league admin in the HTML header and
+		{
+			"email": "moo@moo.com",
+			"firstName": "Bob",
+			"lastName": "Ross",
+			"leagueName": "Giants",
+			"phoneNumber": "123-456-7890",
+			"city": "Mehi",
+			"state": "CA"
+		}
+	returns: 200 code.
+
+app.put('/api/league/password', league.password);
+	// update the league admin password
+	expects:
+		{
+			"oldPassword": "Password2", // should not match
+			"newPassword": "Password1"
+		}
+		returns 200 code or 400 code and {"message": "Current password is incorrect."} or
+			{"message": "Old password and new password should not match."}
+
+
+////////////////////////////////////////////////////////////
+//                     Tryout routes                      //
+////////////////////////////////////////////////////////////
+
+app.get('/api/tryouts', tryouts.getAll);
+	//get all the try outs for the league
+	expects: Either JWT of a coach or league admin
+	returns:
+		[
+			{
+					"id": "dsafdsfdsafdsafdsafs",
+					"date": "2017-12-05T08:00:00.000Z", //UTC time need to convert it to local time
+					"address": "2215 Mine Street, Mine CA 95835",
+					"createdAt": "2017-11-04T07:37:25.000Z",
+					"updatedAt": "2017-11-04T07:37:25.000Z"
+			},
+			{
+					"id": "dfdsafdsafdsafasdf",
+					"date": "2017-12-08T08:00:00.000Z",
+					"address": "2215 Mine Street, Mine CA 95835",
+					"createdAt": "2017-11-04T07:37:25.000Z",
+					"updatedAt": "2017-11-04T07:37:25.000Z"
+			}
+		]
+
+app.post('/api/tryouts', tryouts.modify);
+	//Modify all the try outs for the league
+	expects: JWT of league admin
+		{
+			"tryouts": [ // up to eight routes
+				{
+					"id": "dfdsafdsafdsafasdf",  // expects id if you are modifying an existing tryout date.
+					"date": "2017-12-5", // YYYY-MM-DD
+					"address": "2215 Mine Street, Mine CA 95835" // String
+				},
+				{
+					"date": "2017-12-8",
+					"address": "2215 Mine Street, Mine CA 95835"
+				}
+			]
+		}
+	returns: 200 code
+
+
+////////////////////////////////////////////////////////////
+//                       Team routes                      //
+////////////////////////////////////////////////////////////
+
+app.post('/api/teams', teams.teams);
+	// create a new team for a leagueId
+	expects: JWT of league admin
+		{
+			"name": "Astros niners",
+			"division": "AAA" // get from /divisions
+		}
+	returns: 200 code
+
+app.post('/api/teams/:id', teams.teams);
+	// updates a single team, the :id expects a id of a team
+	expects: JWT of league admin
+		{
+			"name": "Astros niners",
+			"division": "AAA" // get from /divisions
+		}
+	returns: 200 code
+
+app.get('/api/teams', teams.getAll);
+	// grabs all teams of a league
+	expects: Either JWT of league admin or a coach
+	returns:
+		[
+			{
+					"id": "162D4DF0CAA211E79126BBB330C2AEAD",
+					"name": "Astros niners",
+					"division": "AAA", // get from /divisions
+					"createdAt": "2017-11-16T07:45:16.000Z",
+					"updatedAt": "2017-11-16T07:45:16.000Z"
+			},
+			{
+					"id": "24C2AC20CAA211E79126BBB330C2AEAD",
+					"name": "Athletics",
+					"division": "AA", // get from /divisions
+					"createdAt": "2017-11-16T07:45:40.000Z",
+					"updatedAt": "2017-11-16T07:45:40.000Z"
+			}
+		]
+app.delete('/api/teams/:id', teams.delete);
+	// deletes a single team, the :id expects a id of a team
+	expects: JWT of league admin
+		{
+			"name": "Astros niners",
+			"division": "AAA" // get from /divisions
+		}
+	returns: 200 code
+
+
+////////////////////////////////////////////////////////////
+//                     Coaches routes                     //
+////////////////////////////////////////////////////////////
+
+app.post('/coaches/register', coaches.register);
+	// Passwords are emailed upon league validation
+	expects:
+		{
+			"email": "mehs@mell.com",
+			"firstName":"Mahs",
+			"lastName": "Bash",
+			"phoneNumber": "918-281-4832",
+			"division": "AAA", // get from /divisions
+			"gender": "Male",
+			"birthday": "2001-3-25",
+			"address": "123 Easy Street",
+			"city": "Dallas",
+			"state": "Texas",
+			"zip": "12321",
+			"pastDivisions":["AAA", "AA", "A"],
+    	"yearsExperience": 0,
+			"pastLeague": "Miami Gophers",
+			"leagueName": "Rivercats", // use the leagueName from the GET /leagues route
+			"leagueCity": "Mehicos", // use the city from the GET /leagues route
+			"leagueState": "CA" // use the state from the GET /leagues route
+		}
+	returns: 200 code
+
+app.get('/api/coaches/all', coaches.getAll);
+	// Gets all the coaches of a league
+	expects: JWT of league admin
+	returns:
+	[
+		{
+				"id": "68D52CC0CAB211E78B25D12F74092FEF",
+				"firstName": "Mahs",
+				"lastName": "Bash",
+				"email": "mehs@mell.com",
+				"coachType": null,  // either "Assistant" or "Head"
+				"division": "AAA",
+				"phoneNumber": "918-281-4832",
+				"birthday": null,
+				"gender": null,
+				"address": "123 Easy Street",
+				"city": "Dallas",
+				"state": "Texas",
+				"zip": null,
+				"validated": 1,
+				"createdAt": "2017-11-16T01:42:07.000Z",
+				"updatedAt": "2017-11-16T01:47:34.000Z",
+				"leagueId": "50759960CA7811E78A2D71DDD7FCC81A",
+				"teamId": null,
+				"teamName": null,
+				"teamDivision": null
+		},
+		{
+				"id": "A6C1D600CAB211E78B25D12F74092FEF",
+				"firstName": "Gosh",
+				"lastName": "Darnit",
+				"email": "Gosh@gmail.com",
+				"coachType": null,  // either "Assistant" or "Head"
+				"division": "AA",
+				"phoneNumber": "918-281-4832",
+				"birthday": null,
+				"gender": null,
+				"address": "123 Easy Street",
+				"city": "Dallas",
+				"state": "Texas",
+				"zip": null,
+				"validated": 1,
+				"createdAt": "2017-11-16T01:43:50.000Z",
+				"updatedAt": "2017-11-16T01:47:49.000Z",
+				"leagueId": "50759960CA7811E78A2D71DDD7FCC81A",
+				"teamId": null,
+				"teamName": null,
+				"teamDivision": null
+		}
+	]
+
+app.post('/api/coaches/validate/:id', coaches.validate);
+	// Validates a coach and send out the password to the given email address, the :id expects a id of a coach
+	// Also takes a second or two to reply.  Emails seem to take a while.
+	expects: JWT of league admin
+	returns: 200 code or 400 code and {message: "This coach has already been validated."} if validated already
+
+app.post('/coaches/reset', coaches.reset);
+	// Resets a coach's password and sends it out to the given email address
+	// Works only if coach is validated
+	// Also takes a second or two to reply.  Emails seem to take a while.
+	expects:
+		{
+			"email": "mehs@mell.com",
+			"leagueName": "Rivercats", // use the leagueName from the GET /leagues route
+			"leagueCity": "Mehicos", // use the city from the GET /leagues route
+			"leagueState": "CA" // use the state from the GET /leagues route
+		}
+	returns: 200 code
+
+app.post('/coaches/login', coaches.login);
+	// Can only login if coach is validated
+	expects:
+		{
+			"email": "Gosh@gmail.com",
+			"password": "S7aY8kcSSp",
+			"leagueName": "Rivercats", // use the leagueName from the GET /leagues route
+			"leagueCity": "Mehicos", // use the city from the GET /leagues route
+			"leagueState": "CA" // use the state from the GET /leagues route
+		}
+	returns: JWT of coaches
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MDk5NDg4NDUsImlkIjoiMTdCQkExNDBDMkFFMTFFNzk0RkM3REJDNDU4MTA5RTYiLCJsZWFndWVJZCI6Ijk0NzUzRDkwQzEyRDExRTc5QkI5OEIxMUE0RjFFMzQwIn0.QJYSgMcEPAR7U4gralusvxlEkyn8Gz3GUJ3h623TKj0"
+
+app.put('/api/coaches/:id', coaches.coaches);
+	// Modifies a coach's profile.  May have to change it so that a league admin cannot change the email.
+	// :id is the coach's id
+	expects: Either JWT of league admin or a coach
+		With the JWT of a league admin:
+			{
+				"division": "AAA", // get from /divisions
+				"teamId": "162D4DF0CAA211E79126BBB330C2AEAD",
+				"coachType": "Head"  // either "Assistant" or "Head"
+			}
+		With the JWT of a coach:
+			{
+				"email": "mehs@mell.com",
+				"firstName":"Mahs",
+				"lastName": "Bash",
+				"phoneNumber": "918-281-4832",
+				"gender": "Male",
+				"birthday": "2001-3-25",
+				"address": "123 Easy Street",
+				"city": "Dallas",
+				"state": "Texas",
+				"zip": "12321"
+			}
+	returns 200 code
+
+app.post('/api/coaches', coaches.createCoaches);
+	// Create a coach from the league admin screen.  Is Pre-validated and will send an email containing
+	// the coaches password to the coach's email address. Also takes a second or two to reply.  Emails seem to take a while.
+	expects: JWT of league admin
+		{
+			"email": "mehs@mell.com",
+			"firstName":"Mahs",
+			"lastName": "Bash",
+			"phoneNumber": "918-281-4832",
+			"coachType": "Head",  // either "Assistant" or "Head"
+			"division": "AAA", // get from /divisions
+			"gender": "Male",
+			"birthday": "2001-3-25",
+			"address": "123 Easy Street",
+			"city": "Dallas",
+			"state": "Texas",
+			"zip": "12321",
+			"teamId": "162D4DF0CAA211E79126BBB330C2AEAD" // get from /api/teams
+		}
+	returns 200 code
+
+app.post('/api/coaches/password', coaches.password);
+	// For coaches to change their passwords.
+	expects: JWT of a coach
+		{
+			"oldPassword": "Password2",
+			"newPassword": "Password1"
+		}
+	returns 200 code or 400 code and {"message": "Current password is incorrect."} or
+		{"message": "Old password and new password should not match."}
+
+app.get('/api/coaches', coaches.get);
+	// Gets coach's info for the coach's setting page.
+	expects: JWT of a coach
+	returns:
+		{
+			"id": "68D52CC0CAB211E78B25D12F74092FEF",
+			"firstName": "Mahs",
+			"lastName": "Bash",
+			"email": "mehs@mell.com",
+			"coachType": null,   // either "Assistant" or "Head"
+			"division": "AAA",
+			"phoneNumber": "918-281-4832",
+			"birthday": null,
+			"gender": null,
+			"address": null,
+			"city": "Dallas",
+			"state": "Texas",
+			"zip": null,
+			"validated": 1,
+			"createdAt": "2017-11-16T09:42:07.000Z",
+			"updatedAt": "2017-11-16T09:47:34.000Z",
+			"leagueId": "50759960CA7811E78A2D71DDD7FCC81A",
+			"teamId": null,
+			"teamName": null,
+			"teamDivision": null
+		}
+
+app.delete('/api/coaches/:id', coaches.delete);
+	// Delete a coach from the League Admin's dashboard.
+	// :id is the id of the coach
+	expects: JWT of a league admin
+	returns: 200 code
+
+
+////////////////////////////////////////////////////////////
+//                     Players routes                     //
+////////////////////////////////////////////////////////////
+
+app.post('/api/players', players.players);
+	// For the league admin to create a player also socket.emits
+	expects: JWT of a league admin
+		{
+			"firstName": "Gray",
+			"lastName": "Sue",
+			"teamNumber": "15",
+			"birthday": "2001-3-25",
+			"leagueAge": "16",
+			"phoneNumber": "932-843-2394",
+			"email": "tom@tom.com",
+			"division": "AAA", // get from /divisions  This is also their prior division
+			"gender": "Male",
+			"pitcher": "true",								// Is a string
+			"catcher": "false",								// Is a string
+			"coachsKid": "false",							// Is a string
+			"parentFirstName": "Mary",
+			"parentLastName": "Sue",
+			"teamId": "73DFFB60C1F011E7BC8C7F70B6BAE7A5",  //can be left blank
+			"tryoutId": "" // can be left blank, is the id of the tryout date that is assigned to the player. this can be obtained from the GET /api/tryouts
+		}
+	returns
+		{
+			id: 18AAC7F0C2C911E7A116094B99CE6F39
+		}
+
+app.put('/api/players/:id', players.players);
+	// For the league admin to update a player's info
+	// :id expects the player's id
+	expects: JWT of a league admin
+		{
+			"firstName": "Grail",
+			"lastName": "Sue",
+			"teamNumber": "15",
+			"birthday": "2001-3-25",
+			"leagueAge": "16",
+			"phoneNumber": "932-843-2394",
+			"email": "tom@tom.com",
+			"division": "AAA", // get from /divisions  This is also their prior division
+			"gender": "Female",
+			"pitcher": "true",								// Is a string
+			"catcher": "true",								// Is a string
+			"coachsKid": "false",							// Is a string
+			"parentFirstName": "Mary",
+			"parentLastName": "Sue",
+			"teamId": "73DFFB60C1F011E7BC8C7F70B6BAE7A5",  //can be left blank
+			"tryoutId": "" // can be left blank, is the id of the tryout date that is assigned to the player.  this can be obtained from the GET /api/tryouts
+		}
+	returns
+		{
+			id: 18AAC7F0C2C911E7A116094B99CE6F39
+		}
+
+app.get('/api/players', players.getAll);
+	// Gets all the players of the league
+	expects: JWT of league admin or coach, if it is a coach it only shows the players of his division
+	returns:
+	[
+    {
+        "id": "0F2CC3A0CAB611E7AB08819B83BE0AA5",
+        "firstName": "Simon",
+        "lastName": "Cowell",
+        "teamNumber": "54",
+        "birthday": "2005-05-22T07:00:00.000Z",
+        "leagueAge": 13,
+        "phoneNumber": "932-843-2394",
+        "email": "marice@gmai.com",
+        "division": "AA",
+        "gender": null,
+        "pitcher": "true",								// Is a string
+        "catcher": "false",								// Is a string
+        "coachsKid": "false",							// Is a string
+        "parentFirstName": "Marice",
+        "parentLastName": "Bessi",
+        "tryoutId": null,
+        "tryoutDate": null,
+        "tryoutAddress": null,
+        "createdAt": "2017-11-16T10:08:14.000Z",
+        "updatedAt": "2017-11-16T10:08:14.000Z",
+        "leagueId": "50759960CA7811E78A2D71DDD7FCC81A",
+        "teamId": "24C2AC20CAA211E79126BBB330C2AEAD"
+    },
+    {
+        "id": "B859BE70CAB511E7AB08819B83BE0AA5",
+        "firstName": "Gray",
+        "lastName": "Sue",
+        "teamNumber": "15",
+        "birthday": "2001-03-25T08:00:00.000Z",
+        "leagueAge": 16,
+        "phoneNumber": "932-843-2394",
+        "email": "tom@tom.com",
+        "division": "AAA",
+        "gender": null,
+				"pitcher": "true",								// Is a string
+        "catcher": "false",								// Is a string
+        "coachsKid": "false",							// Is a string
+        "parentFirstName": "Mary",
+        "parentLastName": "Sue",
+        "tryoutId": null,
+        "tryoutDate": null,
+        "tryoutAddress": null,
+        "createdAt": "2017-11-16T10:05:48.000Z",
+        "updatedAt": "2017-11-16T10:05:48.000Z",
+        "leagueId": "50759960CA7811E78A2D71DDD7FCC81A",
+        "teamId": "162D4DF0CAA211E79126BBB330C2AEAD"
+    },
+    {
+        "id": "D51D0670CAB511E7AB08819B83BE0AA5",
+        "firstName": "Bob",
+        "lastName": "White",
+        "teamNumber": "12",
+        "birthday": "2003-05-22T07:00:00.000Z",
+        "leagueAge": 14,
+        "phoneNumber": "932-843-2394",
+        "email": "walter@gmail.com",
+        "division": "AAA",
+        "gender": null,
+				"pitcher": "true",								// Is a string
+        "catcher": "false",								// Is a string
+        "coachsKid": "false",							// Is a string
+        "parentFirstName": "Walter",
+        "parentLastName": "White",
+        "tryoutId": null,
+        "tryoutDate": null,
+        "tryoutAddress": null,
+        "createdAt": "2017-11-16T10:06:37.000Z",
+        "updatedAt": "2017-11-16T10:06:37.000Z",
+        "leagueId": "50759960CA7811E78A2D71DDD7FCC81A",
+        "teamId": "162D4DF0CAA211E79126BBB330C2AEAD"
+    	}
+		]
+
+app.get('/api/players/get-players-for-division/:division', players.getDivision);
+	// Gets all the players of the division
+	// :division expects either "Majors", "AAA", "AA", "A", "Farm", "Rookie", "Teeball" capitalization does not matter
+	expects: JWT of league admin
+	returns:
+		[
+			{
+					"id": "0F2CC3A0CAB611E7AB08819B83BE0AA5",
+					"firstName": "Simon",
+					"lastName": "Cowell",
+					"teamNumber": "54",
+					"birthday": "2005-05-22T07:00:00.000Z",
+					"leagueAge": 13,
+					"phoneNumber": "932-843-2394",
+					"email": "marice@gmai.com",
+					"division": "AA",
+					"gender": null,
+					"pitcher": "true",								// Is a string
+	        "catcher": "false",								// Is a string
+	        "coachsKid": "false",							// Is a string
+					"parentFirstName": "Marice",
+					"parentLastName": "Bessi",
+					"tryoutId": null,
+					"tryoutDate": null,
+					"tryoutAddress": null,
+					"createdAt": "2017-11-16T10:08:14.000Z",
+					"updatedAt": "2017-11-16T10:08:14.000Z",
+					"leagueId": "50759960CA7811E78A2D71DDD7FCC81A",
+					"teamId": "24C2AC20CAA211E79126BBB330C2AEAD"
+			}
+		]
+
+app.delete('/api/players/:id', players.delete);
+	// allows league admin to delete a player
+	expects: JWT of league admin
+	returns: 200 code
+
+////////////////////////////////////////////////////////////
+//                     Formulas routes                    //
+////////////////////////////////////////////////////////////
+
+app.post('/api/formulas', formulas.formulas);
+	// allows a coach to create a formula
+	expects: any combination of the following form parameters and coach's JWT
+		{
+			"title": "Pitchers",
+			"hittingMechanics": 50,
+			"batSpeed": 60,
+			"batContact": 90,
+			"throwingMechanics": 135,
+			"armStrength": 55,
+			"armAccuracy": 120,
+			"inField": 100,
+			"outField": 68,
+			"baserunMechanics": 140,
+			"baserunSpeed": 120
+		}
+	returns: the id of the formula that was just created.  Limited to 5 formulas for now.
+		"ac067890c2d411e7b609611dfbd33c48"
+
+app.put('/api/formulas/:id', formulas.formulas);
+	// allows a coach to edit a formula
+	// :id expects the id of the formula that needs editing
+	expects: any combination of the following form parameters and coach's JWT
+		{
+			"title": "Better Pitchers",
+			"hittingMechanics": 50,
+			"batSpeed": 60,
+			"batContact": 90,
+			"throwingMechanics": 135,
+			"armStrength": 55,
+			"armAccuracy": 120,
+			"inField": 100,
+			"outField": 68,
+			"baserunMechanics": 140,
+			"baserunSpeed": 120
+		}
+	returns: 200 code
+
+app.get('/api/formulas', formulas.getAll);
+	// allows a coach to get all his formulas
+	expects: JWT of coach
+	returns:
+		[
+			{
+					"id": "0E6EC5E0C2D611E7A025A509ABEBFCD1",
+					"hittingMechanics": 50,
+					"batSpeed": 60,
+					"batContact": 90,
+					"throwingMechanics": 135,
+					"armStrength": 55,
+					"armAccuracy": 120,
+					"inField": 100,
+					"outField": 68,
+					"baserunMechanics": 140,
+					"baserunSpeed": 120
+					"createdAt": "2017-11-06T09:37:07.000Z",
+					"updatedAt": "2017-11-06T09:37:26.000Z"
+			},
+			{
+					"id": "1B4D0590C2D311E7811AFDC0D03C7FDF",
+					"hittingMechanics": 30,
+					"batSpeed": null,
+					"batContact": null,
+					"throwingMechanics": null,
+					"armStrength": null,
+					"armAccuracy": null,
+					"inField": null,
+					"outField": null,
+					"baserunMechanics": null,
+					"baserunSpeed": null,
+					"createdAt": "2017-11-06T09:18:13.000Z",
+					"updatedAt": "2017-11-06T09:18:13.000Z"
+			}
+		]
+
+app.delete('/api/formulas/:id', formulas.delete);
+	// allows a coach to delete a formula
+	// :id expects the id of the formula that the coach wants to delete
+	expects: JWT of coach
+	returns: 200 code
+
+
+////////////////////////////////////////////////////////////
+//                      Stats routes                      //
+////////////////////////////////////////////////////////////
+
+app.post('/api/stats', stats.stats);
+	// allows a coach to assess a player
+	expects: any combination of the following form parameters and coach's JWT
+		{
+			"hittingMechanics": 3,
+			"hittingMechanicsNotes": "Very bad mechanics",
+			"batSpeed": 6,
+			"batSpeedNotes": "Good speed",
+			"batContact": 8,
+			"batContactNotes": "Very Good contact somehow",
+			"throwingMechanics": 3,
+			"throwingMechanicsNotes": "Bad mechanics",
+			"armStrength": 5,
+			"armStrengthNotes": "Decent arm strength",
+			"armAccuracy": 6,
+			"armAccuracyNotes": "Above average accuracy",
+			"inField": 8,
+			"inFieldNotes": "Good hussle",
+			"outField": 3,
+			"outFieldNotes": "But can't catch pop flys",
+			"baserunMechanics": 8,
+			"baserunMechanicsNotes": "Runs well",
+			"baserunSpeed": 3,
+			"baserunSpeedNotes": "Slow as heck",
+			"division": "AAA",										  // get from /divisions
+			"playerId": "A464C7E0C2CA11E7B03EEDE8E1EB4852",
+			"teamId": "73DFFB60C1F011E7BC8C7F70B6BAE7A5"
+		}
+	returns: the id of the assessment that was just created.
+		"ac067890c2d411e7b609611dfbd33c48"
+
+app.put('/api/stats/:id', stats.stats);
+	// allows a coach to edit a assessment
+	// :id expects the id of the assessment that needs editing
+	expects: any combination of the following form parameters and coach's JWT
+		{
+			"hittingMechanics": 3,
+			"hittingMechanicsNotes": "Very bad mechanics",
+			"batSpeed": 6,
+			"batSpeedNotes": "Good speed",
+			"batContact": 8,
+			"batContactNotes": "Very Good contact somehow",
+			"throwingMechanics": 3,
+			"throwingMechanicsNotes": "Bad mechanics",
+			"armStrength": 5,
+			"armStrengthNotes": "Decent arm strength",
+			"armAccuracy": 6,
+			"armAccuracyNotes": "Above average accuracy",
+			"inField": 8,
+			"inFieldNotes": "Good hussle",
+			"outField": 3,
+			"outFieldNotes": "But can't catch pop flys",
+			"baserunMechanics": 8,
+			"baserunMechanicsNotes": "Runs well",
+			"baserunSpeed": 3,
+			"baserunSpeedNotes": "Slow as heck",
+			"division" = "AAA"              // get from /divisions
+		}
+	returns: 200 code
+
+app.get('/api/stats', stats.getAll);
+	// allows a coach to get all the players of his division's assessment. Only the latest one per player
+	expects: JWT of the coach
+	returns: an array of objects
+		[
+			{
+					"id": "32B08840CAB911E7B15427D5E92C63D5",
+					"playerId": "B859BE70CAB511E7AB08819B83BE0AA5",
+					"firstName": "Gray",
+					"lastName": "Sue",
+					"teamNumber": "15",
+					"hittingMechanics": 3,
+					"hittingMechanicsNotes": "Very bad mechanics",
+					"batSpeed": 6,
+					"batSpeedNotes": "Good speed",
+					"batContact": 8,
+					"batContactNotes": "Very Good contact somehow",
+					"throwingMechanics": 3,
+					"throwingMechanicsNotes": null,
+					"armStrength": null,
+					"armStrengthNotes": null,
+					"armAccuracy": null,
+					"armAccuracyNotes": null,
+					"inField": null,
+					"inFieldNotes": null,
+					"outField": null,
+					"outFieldNotes": null,
+					"baserunMechanics": null,
+					"baserunMechanicsNotes": null,
+					"baserunSpeed": null,
+					"baserunSpeedNotes": null,
+					"division": "AAA",        // get from /divisions
+					"createdAt": "2017-11-16T10:30:42.000Z",
+					"updatedAt": "2017-11-16T10:30:42.000Z"
+			},
+			{
+					"id": "9772E7A0CAB911E7B15427D5E92C63D5",
+					"playerId": "D51D0670CAB511E7AB08819B83BE0AA5",
+					"firstName": "Bob",
+					"lastName": "White",
+					"teamNumber": "12",
+					"hittingMechanics": 5,
+					"hittingMechanicsNotes": "Okay mechanics",
+					"batSpeed": 9,
+					"batSpeedNotes": "Amazing speed",
+					"batContact": 7,
+					"batContactNotes": "Pretty good contact",
+					"throwingMechanics": 7,
+					"throwingMechanicsNotes": "Could be a decent pitcher",
+					"armStrength": 8,
+					"armStrengthNotes": "Very nice arm strength",
+					"armAccuracy": 6,
+					"armAccuracyNotes": "Above average accuracy",
+					"inField": 8,
+					"inFieldNotes": "Good hussle",
+					"outField": 8,
+					"outFieldNotes": "Very good awareness of the feild",
+					"baserunMechanics": 8,
+					"baserunMechanicsNotes": "Runs well",
+					"baserunSpeed": 7,
+					"baserunSpeedNotes": "Pretty fast",
+					"division": "AAA",            // get from /divisions
+					"createdAt": "2017-11-16T10:33:31.000Z",
+					"updatedAt": "2017-11-16T10:33:31.000Z"
+			}
+		]
+
+app.get('/api/stats/:playerId', stats.get);
+	// allows a coach to get all the stats he made of one of his players
+	// :id expects the id of the player that he/she wants to view
+	expects: any combination of the following form parameters and coach's JWT
+	returns:
+		[
+			{
+				"hittingMechanics": 3,
+				"hittingMechanicsNotes": "Very bad mechanics",
+				"batSpeed": 10,
+				"batSpeedNotes": "Good speed",
+				"batContact": null,
+				"batContactNotes": null,
+				"throwingMechanics": null,
+				"throwingMechanicsNotes": null,
+				"armStrength": null,
+				"armStrengthNotes": null,
+				"armAccuracy": null,
+				"armAccuracyNotes": null,
+				"inField": null,
+				"inFieldNotes": null,
+				"outField": null,
+				"outFieldNotes": null,
+				"baserunMechanics": null,
+				"baserunMechanicsNotes": null,
+				"baserunSpeed": null,
+				"baserunSpeedNotes": null,
+				"division": null,
+				"createdAt": "2017-11-06T10:20:15.000Z",
+				"updatedAt": "2017-11-06T10:26:13.000Z"
+			},
+			{
+				"hittingMechanics": 3,
+				"hittingMechanicsNotes": "Very bad mechanics",
+				"batSpeed": 6,
+				"batSpeedNotes": "Good speed",
+				"batContact": 8,
+				"batContactNotes": "Very Good contact somehow",
+				"throwingMechanics": 3,
+				"throwingMechanicsNotes": 0,
+				"armStrength": "5",
+				"armStrengthNotes": "Decent arm strength",
+				"armAccuracy": 6,
+				"armAccuracyNotes": "Above average accuracy",
+				"inField": 8,
+				"inFieldNotes": "Good hussle",
+				"outField": 3,
+				"outFieldNotes": "But can't catch pop flys",
+				"baserunMechanics": 8,
+				"baserunMechanicsNotes": "Runs well",
+				"baserunSpeed": 3,
+				"baserunSpeedNotes": "Slow as heck",
+				"division": null,
+				"createdAt": "2017-11-06T10:19:26.000Z",
+				"updatedAt": "2017-11-06T10:19:26.000Z"
+			}
+		]
+
+app.delete('/api/stats/:id', stats.delete);
+	// allows a coach to delete a player assessment
+	// :id expects the id of the formula that the coach wants to delete
+	expects: JWT of coach
+	returns: 200 code
+
+
+////////////////////////////////////////////////////////////
+//                    Divisions Routes                    //
+////////////////////////////////////////////////////////////
+
+app.get('/divisions', divisions.getAll)
+	// Gets all the possible divisions that are available.
+	returns:
