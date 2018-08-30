@@ -5,11 +5,12 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  query = `DELETE FROM users WHERE id = UNHEX(?)`
+  query = `DELETE FROM teams WHERE id = (SELECT teamId FROM coaches WHERE userId = UNHEX(?) AND teamId = UNHEX(?) AND
+    coachType > 99 LIMIT 1) LIMIT 1`
 
-  queryData = [ req.user.id ];
+  queryData = [ req.user.id, req.body ];
 
-  Promise.using(getConnection(), connection => connection.execute(userQuery, userData))
+  Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.end())
     .catch(error => {
       if (error.status)

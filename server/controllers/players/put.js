@@ -1,3 +1,6 @@
+const Promise           = require("bluebird"),
+      getConnection     = require("../../config/mysql");
+
 module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [],

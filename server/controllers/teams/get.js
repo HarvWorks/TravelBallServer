@@ -5,12 +5,12 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  query = `SELECT email, birthday, gender, firstName, lastName, city, state, zip, phoneNumber, createdAt, updatedAt
-    FROM users WHERE id = UNHEX(?)`
+  query = `SELECT HEX(teamId) id, name, street, city, state, zip, country, teams.createdAt createdAt,
+    teams.updatedAt updatedAt FROM teams LEFT JOIN coaches on teams.id = teamId WHERE userId = UNHEX(?)`
 
   queryData = [ req.user.id ];
 
-  Promise.using(getConnection(), connection => connection.execute(userQuery, userData))
+  Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.status(200).json(data[0]))
     .catch(error => {
       if (error.status)

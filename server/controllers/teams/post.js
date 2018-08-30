@@ -1,15 +1,30 @@
-const Promise = require("bluebird");
-const getConnection = require("../../config/mysql");
+const Promise           = require("bluebird"),
+      getConnection     = require("../../config/mysql"),
+      crypto            = require('crypto');
 
 module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  query = `INSERT INTO players (id, firstName, lastName, birthday, throwingArm, battingArm, position, jerseyNumber, )`
+  if (!req.body.name)
+    return res.status(400).json({ message: "missingFields"  });
 
-  queryData = [ req.user.id ];
+  query = `INSERT INTO teams SET id = UNHEX(?), name = ?, street = ?, city = ?, state = ?, zip = ?, country = ?,
+    createdAt = NOW(), updatedAt = NOW()`;
 
-  Promise.using(getConnection(), connection => connection.execute(userQuery, userData))
+  const id = crypto.randomBytes(16).toString('hex')
+
+  queryData = [
+    id,
+    req.body.name,
+    req.body.street ? req.body.street : null,
+    req.body.city ? req.body.city : null,
+    req.body.state ? req.body.state : null,
+    req.body.zip ? req.body.zip : null,
+    req.body.country ? req.body.country : null,
+  ];
+
+  Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.status(200).json(data[0]))
     .catch(error => {
       if (error.status)

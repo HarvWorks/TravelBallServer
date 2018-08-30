@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
     req.body.teamId
   ];
 
-  Promise.using(getConnection(), connection => connection.execute(userQuery, userData))
+  Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.status(200).json(data[0]))
     .catch(error => {
       if (error.status)

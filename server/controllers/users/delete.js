@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
 
   queryData = [ req.user.id ];
 
-  Promise.using(getConnection(), connection => connection.execute(userQuery, userData))
+  Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.end())
     .catch(error => {
       if (error.status)
