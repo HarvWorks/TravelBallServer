@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
   if (!req.body.formulaId)
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `DELETE FROM assestments WHERE userId = UNHEX(?) AND id = UNHEX(?) LIMIT 1`
+  query = `DELETE FROM formulas WHERE userId = UNHEX(?) AND id = UNHEX(?) LIMIT 1`
 
   queryData = [ req.user.id, req.body.formulaId ];
 

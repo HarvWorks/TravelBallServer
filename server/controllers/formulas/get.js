@@ -5,17 +5,14 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  if (!req.body.teamId)
+  if (!req.body.formulaId)
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `SELECT HEX(id) id, HEX(playerId) playerId, hittingMechanics, hittingMechanicsNotes, batSpeed,
-    batSpeedNotes, batContact, batContactNotes, throwingMechanics, throwingMechanicsNotes, armStrength,
-    armStrengthNotes, armAccuracy, armAccuracyNotes, inField, inFieldNotes, outField, outFieldNotes,
-    baserunMechanics, baserunMechanicsNotes, baserunSpeed, baserunSpeedNotes, heart, heartNotes, attitude,
-    attitudeNotes, coachability, coachabilityNotes, createdAt, updatedAt FROM assestments WHERE
-    userId = UNHEX(?) AND teamId = UNHEX(?)`;
+  query = `SELECT HEX(id) id, title, hittingMechanics, batSpeed, batContact, throwingMechanics, armStrength,
+    armAccuracy, inField, outField, baserunMechanics, baserunSpeed, heart, attitude, coachability, createdAt,
+    updatedAt FROM formulas WHERE userId = UNHEX(?) AND id = UNHEX(?)`;
 
-  queryData = [ req.user.id, req.body.teamId ];
+  queryData = [ req.user.id, req.body.formulaId ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.status(200).json(data[0]))

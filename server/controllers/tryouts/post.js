@@ -4,28 +4,48 @@ const Promise           = require("bluebird"),
 
 module.exports = async (req, res) => {
   let query       = ``,
-      queryData   = [];
+      query2      = ``,
+      queryData   = []
+      queryData2  = [];
 
-  if (!req.body.name)
+  if (
+    !req.body.teamId &&
+    !req.body.name &&
+    !req.body.street &&
+    !req.body.city &&
+    !req.body.state &&
+    !req.body.zip &&
+    !req.body.country
+  )
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `INSERT INTO teams SET id = UNHEX(?), name = ?, street = ?, city = ?, state = ?, zip = ?, country = ?,
-    createdAt = NOW(), updatedAt = NOW()`;
+  query = `SELECT teamId FROM coaches WHERE userId = UNHEX(?) AND teamId = UNHEX(?) AND coachType > 99 LIMIT 1`;
 
-  const id = crypto.randomBytes(16).toString('hex')
+  query2 = `INSERT INTO tryouts SET id = UNHEX(?), teamId = UNHEX(?), name = ?, street = ?, city = ?, state = ?, zip = ?,
+    country = ?, createdAt = NOW(), updatedAt = NOW()`;
 
-  queryData = [
+  const id = crypto.randomBytes(16).toString('hex');
+
+  queryData = [ req.user.id, req.body.teamId ];
+
+  queryData2 = [
     id,
+    req.body.teamId,
     req.body.name,
-    req.body.street ? req.body.street : null,
-    req.body.city ? req.body.city : null,
-    req.body.state ? req.body.state : null,
-    req.body.zip ? req.body.zip : null,
-    req.body.country ? req.body.country : null,
+    req.body.street
+    req.body.city
+    req.body.state
+    req.body.zip
+    req.body.country
   ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .then(data => res.status(200).json(data[0]))
+    .spread(data => {
+      if (!data[0] || !data[0].teamId)
+        throw { status: 400, message: "notHeadCoach" };
+      return Promise.using(getConnection(), connection => connection.execute(query2, queryData2))
+    })
+    .then(data => res.status(200).json(id))
     .catch(error => {
       if (error.status)
         return res.status(error.status).json({ message: error.message });

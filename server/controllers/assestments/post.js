@@ -4,19 +4,12 @@ const Promise           = require("bluebird"),
 
 module.exports = async (req, res) => {
   let query       = ``,
-      query2      = ``,
-      queryData   = []
-      queryData2  = [];
+      queryData   = [];
 
   if (!req.body.teamId && !req.body.playerId)
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `SELECT userId FROM coaches INNER JOIN players ON coaches.teamId = players.teamId WHERE userId = UNHEX(?) AND
-    coaches.teamId = UNHEX(?) AND players.id = UNHEX(?)`
-
-  queryData = [ req.user.id, req.body.teamId, req.body.playerId ];
-
-  query2 = `INSERT INTO assestments SET id = UNHEX(?), playerId = UNHEX(?), userId = UNHEX(?), teamId = UNHEX(?),
+  query = `INSERT INTO assestments SET id = UNHEX(?), playerId = UNHEX(?), userId = UNHEX(?), teamId = UNHEX(?),
     hittingMechanics = ?, hittingMechanicsNotes = ?, batSpeed = ?, batSpeedNotes = ?, batContact = ?, batContactNotes =?,
     throwingMechanics = ?, throwingMechanicsNotes = ?, armStrength = ?, armStrengthNotes = ?, armAccuracy = ?,
     armAccuracyNotes = ?, inField = ?, inFieldNotes = ?, outField = ?, outFieldNotes = ?, baserunMechanics = ?,
@@ -25,7 +18,7 @@ module.exports = async (req, res) => {
 
   const id = crypto.randomBytes(16).toString('hex')
 
-  queryData2 = [
+  queryData = [
     id,
     req.body.playerId,
     req.user.id,
@@ -59,11 +52,6 @@ module.exports = async (req, res) => {
   ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .spread(data => {
-      if (!data[0] || !data[0].userId)
-  			throw { status: 400, message: "notPartOfTeam" };
-      return Promise.using(getConnection(), connection => connection.execute(query2, queryData2))
-    })
     .then(data => res.status(200).json(id))
     .catch(error => {
       if (error.status)

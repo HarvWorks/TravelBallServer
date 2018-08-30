@@ -20,7 +20,11 @@ module.exports = async (req, res) => {
   queryData2 = [ req.body.userId, req.body.teamId ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .then(() => Promise.using(getConnection(), connection => connection.execute(query2, queryData2)))
+    .spread(data => {
+      if (!data[0] || !data[0].teamId)
+        throw { status: 400, message: "notHeadCoach" };
+      return Promise.using(getConnection(), connection => connection.execute(query2, queryData2))
+    })
     .then(data => res.status(200).json(data[0]))
     .catch(error => {
       if (error.status)

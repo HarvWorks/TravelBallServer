@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
     armStrengthNotes, armAccuracy, armAccuracyNotes, inField, inFieldNotes, outField, outFieldNotes,
     baserunMechanics, baserunMechanicsNotes, baserunSpeed, baserunSpeedNotes, heart, heartNotes, attitude,
     attitudeNotes, coachability, coachabilityNotes, createdAt, updatedAt FROM assestments WHERE
-    userId = UNHEX(?) AND teamId = UNHEX(?)`;
+    teamId = (SELECT teamId FROM coaches WHERE userId = UNHEX(?) AND teamId = UNHEX(?) LIMIT 1)`;
 
   queryData = [ req.user.id, req.body.teamId ];
 

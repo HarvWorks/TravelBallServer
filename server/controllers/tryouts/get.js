@@ -5,8 +5,8 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  query = `SELECT HEX(teamId) id, name, street, city, state, zip, country, teams.createdAt createdAt,
-    teams.updatedAt updatedAt FROM teams LEFT JOIN coaches on teams.id = teamId WHERE userId = UNHEX(?)`
+  query = `SELECT HEX(id) id, HEX(teamId) teamId, name, street, city, state, zip, country, tryouts.createdAt createdAt,
+    tryouts.updatedAt updatedAt FROM tryouts LEFT JOIN coaches on tryouts.teamId = coaches.teamId WHERE userId = UNHEX(?)`;
 
   queryData = [ req.user.id ];
 
