@@ -12,9 +12,6 @@ module.exports = async (req, res) => {
   query = `INSERT INTO teams SET id = UNHEX(?), name = ?, street = ?, city = ?, state = ?, zip = ?, country = ?,
     createdAt = NOW(), updatedAt = NOW()`;
 
-  query2 = `INSERT INTO coaches SET userId = UNHEX(?), teamId = UNHEX(?), coachType = 101, createdAt = NOW(),
-    updatedAt = NOW()`;
-
   const id = crypto.randomBytes(16).toString('hex')
 
   queryData = [
@@ -27,11 +24,8 @@ module.exports = async (req, res) => {
     req.body.country ? req.body.country : null,
   ];
 
-  query2 = [ req.user.id, id ]
-
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .then(() => Promise.using(getConnection(), connection => connection.execute(query2, queryData2)))
-    .then(data => res.status(200).json(id))
+    .then(data => res.status(200).json(data[0]))
     .catch(error => {
       if (error.status)
         return res.status(error.status).json({ message: error.message });
