@@ -6,22 +6,27 @@ const Promise           = require("bluebird"),
       serverKeys        = require("../../../keys/keys");
 
 module.exports = async (req, res) => {
-  let query       = ``;
+  let query       = ``,
+      query2      = ``;
 
-  query = `UPDATE users SET password = ? WHERE id = UNHEX(?)`
+  if ( !req.body.newPassword && !req.body.oldPassword )
+    return res.status(400).json({ message: "missingFields"  });
 
-  Bcrypt.hashAsync(req.body.password, 10)
-    .then(hash => Promise.using(getConnection(), connection => {
-      return connection.execute(query, [ hash, req.user.id ])
-    }))
-    .then(() => {
-      // Create a new jwt token for the user
-      const tsbToken = jwt.sign({
-        id: id,
-        exp: Math.floor(Date.now() / 1000) + 24 * 3600 * 1000
-      }, serverKeys.jwtKey);
-      res.status(200).json(tsbToken);
+  query = `SELECT password FROM users WHERE id = UNHEX(?)`
+
+  query2 = `UPDATE users SET password = ? WHERE id = UNHEX(?)`
+
+  Promise.using(getConnection(), connection => connection.execute(query, [ req.user.id ]))
+    .spread(data => Bcrypt.compareAsync(req.body.oldPassword, data[0].password))
+    .then(isMatch => {
+      if (!isMatch)
+  			throw { status: 400, message: "Incorrect Password" };
+      return Bcrypt.hashAsync(req.body.newPassword, 10);
     })
+    .then(hash => Promise.using(getConnection(), connection => {
+      return connection.execute(query2, [ hash, req.user.id ])
+    }))
+    .then(() => res.end())
     .catch(error => {
       if (error.status)
         return res.status(error.status).json({ message: error.message });

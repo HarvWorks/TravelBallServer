@@ -47,6 +47,8 @@ module.exports = async (req, res) => {
     .catch(error => {
       if (error.status)
         return res.status(error.status).json({ message: error.message });
+      if (error.code === "ER_DUP_ENTRY")
+        return res.status(400).json({ message: "User already exists, please login."});
       return res.status(400).json({ message: "admin", error: error });
     });
 }

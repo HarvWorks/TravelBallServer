@@ -22,10 +22,10 @@ module.exports = function (app) {
 	//                  Authenication routes                  //
 	////////////////////////////////////////////////////////////
 
-	app.post('/login', auth.login); // Login route
-	app.post('/register', auth.register); // Registeration route
-	app.post('/forgotPassword', auth.forgotPassword); // Forgot password route
-	app.post('/emailVerfication', auth.emailVerification); // Verify email route
+	app.post('/auth/login', auth.login); // Login route
+	app.post('/auth/register', auth.register); // Registeration route
+	app.post('/auth/forgotPassword', auth.forgotPassword); // Forgot password route
+	app.post('/auth/emailVerfication', auth.emailVerification); // Verify email route
 
 	////////////////////////////////////////////////////////////
 	//                     Coaches routes                     //

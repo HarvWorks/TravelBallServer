@@ -220,7 +220,7 @@ module.exports = async (req, res) => {
   if (!queryAdded)
     return res.status(200).json({ message: "emptyFields" });
 
-  query += `updatedAt = NOW() WHERE userId = UNHEX(?) AND id = UNHEX(?) LIMIT 1`;
+  query += `, updatedAt = NOW() WHERE userId = UNHEX(?) AND id = UNHEX(?) LIMIT 1`;
 
   queryData.push(req.user.id);
   queryData.push(req.body.assestmentId);

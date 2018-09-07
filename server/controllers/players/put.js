@@ -104,7 +104,7 @@ module.exports = async (req, res) => {
   if (!queryAdded)
     return res.status(200).json({ message: "emptyFields" });
 
-  query += `updatedAt = NOW() WHERE teamId = (SELECT teamId FROM coaches WHERE userId = UNHEX(?) LIMIT 1) AND
+  query += `, updatedAt = NOW() WHERE teamId = (SELECT teamId FROM coaches WHERE userId = UNHEX(?) LIMIT 1) AND
     id = UNHEX(?) LIMIT 1`;
 
   queryData.push(req.user.id);
