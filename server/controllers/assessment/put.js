@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
       queryData   = [],
       queryAdded  = false;
 
-  if (!req.body.assestmentId)
+  if (!req.body.id)
     return res.status(400).json({ message: "missingFields"  });
 
   query = `UPDATE assestments SET `;

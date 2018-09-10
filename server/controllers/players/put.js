@@ -6,12 +6,27 @@ module.exports = async (req, res) => {
       queryData   = [],
       queryAdded  = false;
 
-  if (!req.body.playerId)
+  if (!req.body.id)
     return res.status(400).json({ message: "missingFields"  });
+
+    console.log('udpating player', req.body);
 
   query = `UPDATE players SET `;
 
+  if (req.body.teamId) {
+    const tempQuery = `SELECT HEX(teamId) teamId, coachType FROM userTeams WHERE userId = UNHEX(?) AND teamId = UNHEX(?)`;
+    const tempQueryData = [ req.user.id, req.body.teamId ];
+    const teamData = await Promise.using(getConnection(), connection => connection.execute(tempQuery, tempQueryData));
+    if (teamData[0] && teamData[0].teamId) {
+      query += `teamId = ? `;
+      queryData.push(req.body.teamId)
+      queryAdded = true;
+    }
+  }
+
   if (req.body.firstName) {
+    if (queryAdded)
+      query += `, `
     query += `firstName = ? `;
     queryData.push(req.body.firstName)
     queryAdded = true;
@@ -37,7 +52,7 @@ module.exports = async (req, res) => {
     if (queryAdded)
       query += `, `
     query += `birthday = ? `;
-    queryData.push(req.body.birthday)
+    queryData.push(new Date(req.body.birthday))
     queryAdded = true;
   }
 
@@ -104,13 +119,11 @@ module.exports = async (req, res) => {
   if (!queryAdded)
     return res.status(200).json({ message: "emptyFields" });
 
-  query += `, updatedAt = NOW() WHERE teamId = (SELECT teamId FROM coaches WHERE userId = UNHEX(?) LIMIT 1) AND
-    id = UNHEX(?) LIMIT 1`;
+  query += `, updatedAt = NOW() WHERE id = UNHEX(?) LIMIT 1`;
 
-  queryData.push(req.user.id);
-  queryData.push(req.body.playerId);
+  queryData.push(req.body.id);
 
-  Promise.using(getConnection(), connection => connection.execute(userQuery, userData))
+  Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.end())
     .catch(error => {
       if (error.status)

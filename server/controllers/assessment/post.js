@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  if (!req.body.teamId && !req.body.playerId)
+  if (!req.body.teamId || !req.body.playerId)
     return res.status(400).json({ message: "missingFields"  });
 
   query = `INSERT INTO assestments SET id = UNHEX(?), playerId = UNHEX(?), userId = UNHEX(?), teamId = UNHEX(?),

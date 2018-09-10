@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
       queryData   = [],
       queryData2  = [];
 
-  if (!req.body.userId && !req.body.teamId)
+  if (!req.body.userId || !req.body.teamId)
     return res.status(400).json({ message: "missingFields"  });
 
   query = `SELECT teamId FROM coaches WHERE userId = UNHEX(?) AND teamId = UNHEX(?) AND coachType > 99`;

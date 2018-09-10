@@ -1,4 +1,4 @@
-const 	assestments		= require('../controllers/assestments/index.js'),
+const 	assessment		= require('../controllers/assessment/index.js'),
 				auth					= require('../controllers/auth/index.js'),
 				coaches				= require('../controllers/coaches/index.js'),
 				formulas			= require('../controllers/formulas/index.js'),
@@ -13,10 +13,11 @@ module.exports = function (app) {
 	//                   Assestments routes                   //
 	////////////////////////////////////////////////////////////
 
-	app.delete('/api/assestment', assestments.delete); // Delete the assestment
-	app.get('/api/assestment', assestments.get); // Get all the assestments that that the team has done
-	app.post('/api/assestment', assestments.post); // Add a new assestment
-	app.put('/api/assestment', assestments.put); // Update an assestment
+	app.delete('/api/assessment', assessment.delete); // Delete the assessment
+	app.get('/api/assessment/one/:id', assessment.get); // Get one assessment
+	app.get('/api/assessment/tryout/:id', assessment.getAll); // Get all the assessments of that tryout
+	app.post('/api/assessment', assessment.post); // Add a new assessment
+	app.put('/api/assessment', assessment.put); // Update an assestment
 
 	////////////////////////////////////////////////////////////
 	//                  Authenication routes                  //
@@ -40,7 +41,8 @@ module.exports = function (app) {
 	////////////////////////////////////////////////////////////
 
 	app.delete('/api/formula', formulas.delete); // Delete the formula
-	app.get('/api/formula', formulas.get); // Get all the formulas of that team and user
+	app.get('/api/formula', formulas.getAll); // Get all the formulas of that user
+	app.get('/api/formula/:id', formulas.get); // Get one formula
 	app.post('/api/formula', formulas.post); // Add a new formula
 	app.put('/api/formula', formulas.put); // Update an formula
 
@@ -49,7 +51,8 @@ module.exports = function (app) {
 	////////////////////////////////////////////////////////////
 
 	app.delete('/api/player', players.delete); // Delete the player
-	app.get('/api/player', players.get); // Get all the players on that team
+	app.get('/api/player', players.getAll); // Get all the players of that user
+	app.get('/api/player/:id', players.get); // Get one player
 	app.post('/api/player', players.post); // Add a new player
 	app.put('/api/player', players.put); // Update an player
 
@@ -58,7 +61,8 @@ module.exports = function (app) {
 	////////////////////////////////////////////////////////////
 
 	app.delete('/api/team', teams.delete); // Delete the team
-	app.get('/api/team', teams.get); // Get that team's detailed info
+	app.get('/api/team', teams.getAll); // Get all teams associated with user
+	app.get('/api/team/:id', teams.get); // Get that team's detailed info
 	app.post('/api/team', teams.post); // Add a new team
 	app.put('/api/team', teams.put); // Update an team
 
@@ -67,7 +71,8 @@ module.exports = function (app) {
 	////////////////////////////////////////////////////////////
 
 	app.delete('/api/tryout', tryouts.delete); // Delete the tryout has to be head coach
-	app.get('/api/tryout', tryouts.get); // Get all the tryouts that the team has
+	app.get('/api/tryout', tryouts.getAll); // Get all the tryouts that the user has
+	app.get('/api/tryout/:id', tryouts.get); // Get one tryout
 	app.post('/api/tryout', tryouts.post); // Add a new tryout has to be head coach
 	app.put('/api/tryout', tryouts.put); // Update a tryout has to be head coach
 

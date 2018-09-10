@@ -5,7 +5,7 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  if (!req.body.tryoutId && !req.body.teamId)
+  if (!req.body.tryoutId || !req.body.teamId)
     return res.status(400).json({ message: "missingFields"  });
 
   query = `DELETE FROM tryouts WHERE id = UNHEX(?) AND teamId = (SELECT teamId FROM coaches WHERE userId = UNHEX(?)

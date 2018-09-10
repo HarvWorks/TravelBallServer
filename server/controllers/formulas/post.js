@@ -7,35 +7,33 @@ module.exports = async (req, res) => {
       queryData   = [];
 
   if (
-    !req.body.teamId &&
-    !req.body.title &&
-    !req.body.hittingMechanics &&
-    !req.body.batSpeed &&
-    !req.body.batContact &&
-    !req.body.throwingMechanics &&
-    !req.body.armStrength &&
-    !req.body.armAccuracy &&
-    !req.body.inField &&
-    !req.body.outField &&
-    !req.body.baserunSpeed &&
-    !req.body.baserunMechanics &&
-    !req.body.heart &&
-    !req.body.attitude &&
+    !req.body.title ||
+    !req.body.hittingMechanics ||
+    !req.body.batSpeed ||
+    !req.body.batContact ||
+    !req.body.throwingMechanics ||
+    !req.body.armStrength ||
+    !req.body.armAccuracy ||
+    !req.body.inField ||
+    !req.body.outField ||
+    !req.body.baserunSpeed ||
+    !req.body.baserunMechanics ||
+    !req.body.heart ||
+    !req.body.attitude ||
     !req.body.coachability
   )
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `INSERT INTO assestments SET id = UNHEX(?), userId = UNHEX(?), teamId = UNHEX(?), hittingMechanics = ?,
-    batSpeed = ?, batContact = ?, throwingMechanics = ?, armStrength = ?, armAccuracy = ?, inField = ?, outField = ?,
-    baserunMechanics = ?, baserunSpeed = ?, heart = ?, attitude = ?, coachability = ?, createdAt = NOW(),
+  query = `INSERT INTO formulas SET id = UNHEX(?), userId = UNHEX(?), title = ?, hittingMechanics = ?, batSpeed = ?,
+    batContact = ?, throwingMechanics = ?, armStrength = ?, armAccuracy = ?, inField = ?, outField = ?,
+    baserunSpeed = ?, baserunMechanics = ?, heart = ?, attitude = ?, coachability = ?, createdAt = NOW(),
     updatedAt = NOW()`;
 
   const id = crypto.randomBytes(16).toString('hex')
 
-  queryData2 = [
+  queryData = [
     id,
     req.user.id,
-    req.body.teamId,
     req.body.title,
     req.body.hittingMechanics,
     req.body.batSpeed,
@@ -49,12 +47,13 @@ module.exports = async (req, res) => {
     req.body.baserunMechanics,
     req.body.heart,
     req.body.attitude,
-    req.body.coachability,
+    req.body.coachability
   ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.status(200).json(id))
     .catch(error => {
+      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

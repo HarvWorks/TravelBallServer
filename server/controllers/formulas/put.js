@@ -6,10 +6,10 @@ module.exports = async (req, res) => {
       queryData   = [],
       queryAdded  = false;
 
-  if (!req.body.formulaId)
+  if (!req.body.id)
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `UPDATE assestments SET `;
+  query = `UPDATE formulas SET `;
 
   if (req.body.title) {
     query += `title = ? `;
@@ -127,11 +127,12 @@ module.exports = async (req, res) => {
   query += `, updatedAt = NOW() WHERE userId = UNHEX(?) AND id = UNHEX(?) LIMIT 1`;
 
   queryData.push(req.user.id);
-  queryData.push(req.body.formulaId);
+  queryData.push(req.body.id);
 
-  Promise.using(getConnection(), connection => connection.execute(userQuery, userData))
+  Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.end())
     .catch(error => {
+      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });
