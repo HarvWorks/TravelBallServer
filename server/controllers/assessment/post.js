@@ -6,10 +6,10 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  if (!req.body.teamId || !req.body.playerId)
+  if (!req.body.tryoutId || !req.body.playerId)
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `INSERT INTO assestments SET id = UNHEX(?), playerId = UNHEX(?), userId = UNHEX(?), teamId = UNHEX(?),
+  query = `INSERT INTO assestments SET id = UNHEX(?), playerId = UNHEX(?), userId = UNHEX(?), tryoutId = UNHEX(?),
     hittingMechanics = ?, hittingMechanicsNotes = ?, batSpeed = ?, batSpeedNotes = ?, batContact = ?, batContactNotes =?,
     throwingMechanics = ?, throwingMechanicsNotes = ?, armStrength = ?, armStrengthNotes = ?, armAccuracy = ?,
     armAccuracyNotes = ?, inField = ?, inFieldNotes = ?, outField = ?, outFieldNotes = ?, baserunMechanics = ?,
@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     id,
     req.body.playerId,
     req.user.id,
-    req.body.teamId,
+    req.body.tryoutId,
     req.body.hittingMechanics ? req.body.hittingMechanics : null,
     req.body.hittingMechanicsNotes ? req.body.hittingMechanicsNotes : null,
     req.body.batSpeed ? req.body.batSpeed : null,
@@ -51,8 +51,13 @@ module.exports = async (req, res) => {
     req.body.coachabilityNotes ? req.body.coachabilityNotes : null,
   ];
 
+  query2 = `UPDATE tryouts SET numberPlayers = numberPlayers + 1 WHERE tryoutId = UNHEX(?)`;
+
+  queryData2  = [ req.body.tryoutId ];
+
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .then(data => res.status(200).json(id))
+    .then(() => Promise.using(getConnection(), connection => connection.execute(query2, queryData2)))
+    .then(() => res.status(200).json(id))
     .catch(error => {
       if (error.status)
         return res.status(error.status).json({ message: error.message });

@@ -12,7 +12,12 @@ module.exports = async (req, res) => {
 
   queryData = [ req.user.id, req.body.id ];
 
+  query2 = `UPDATE tryouts SET numberPlayers = numberPlayers + 1 WHERE tryoutId = UNHEX(?)`;
+
+  queryData2  = [ req.body.tryoutId ];
+
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
+    .then(() => Promise.using(getConnection(), connection => connection.execute(query2, queryData2)))
     .then(data => res.end())
     .catch(error => {
       if (error.status)

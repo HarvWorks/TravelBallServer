@@ -6,47 +6,89 @@ module.exports = async (req, res) => {
   let query       = ``,
       query2      = ``,
       queryData   = []
-      queryData2  = [];
+      queryData2  = [],
+      length      = 0,
+      tempPlayers = [],
+      tempCoaches = [],
+      players     = [],
+      coaches     = [];
 
   if (
-    !req.body.teamId &&
-    !req.body.name &&
-    !req.body.street &&
-    !req.body.city &&
-    !req.body.state &&
-    !req.body.zip &&
-    !req.body.country
+    !req.body.teamId ||
+    !req.body.name ||
+    !req.body.date ||
+    !req.body.playerIds ||
+    !req.body.playerIds[0] ||
+    !req.body.playerIds[0].value
   )
-    return res.status(400).json({ message: "missingFields"  });
+    return res.status(400).json({ message: "missingFields" });
 
-  query = `SELECT teamId FROM coaches WHERE userId = UNHEX(?) AND teamId = UNHEX(?) AND coachType > 99 LIMIT 1`;
+  const id = crypto.randomBytes(16);
 
-  query2 = `INSERT INTO tryouts SET id = UNHEX(?), teamId = UNHEX(?), name = ?, street = ?, city = ?, state = ?, zip = ?,
-    country = ?, createdAt = NOW(), updatedAt = NOW()`;
+  tempPlayers = req.body.playerIds;
+  if ( req.body.playerIds.length > 1 ) {
+    length = tempPlayers.length;
+    for (let i = 0; i < length; i ++) {
+      if (!/^[0-9a-fA-F]{32}$/.test(tempPlayers[i].value)){
+        return res.status(400).json({ message: "badUUID" });
+      }
+      players.push([id, new Buffer(tempPlayers[i].value, 'hex'), "NOW()", "NOW()"])
+    }
+    query2 = `INSERT INTO assestments (tryoutId, playerId, createdAt, updatedAt) VALUES ?`;
+    queryData2 = [players];
+  } else {
+    query2 = `INSERT INTO assestments SET tryoutId = ?, playerId = UNHEX(?), createdAt = NOW(), updatedAt = NOW()`;
+    queryData2 = [id, tempPlayers[0].value];
+  }
 
-  const id = crypto.randomBytes(16).toString('hex');
+  if ( req.body.coachIds && req.body.coachIds[0] && req.body.coachIds[0].value ) {
+    tempCoaches = req.body.coachIds;
+    length = tempCoaches.length;
+    for (let i = 0; i < length; i ++) {
+      if (!/^[0-9a-fA-F]{32}$/.test(tempCoaches[i].value)){
+        return res.status(400).json({ message: "badUUID" });
+      }
+      coaches.push([id, new Buffer(tempCoaches[i].value, 'hex'), false, "NOW()", "NOW()"])
+    }
+    // Now push the user into the list as a main coach
+    coaches.push([id, new Buffer(req.user.id, 'hex'), true, "NOW()", "NOW()"])
 
-  queryData = [ req.user.id, req.body.teamId ];
+    query3 = `INSERT INTO tryoutCoaches (tryoutId, userId, primaryCoach, createdAt, updatedAt) VALUES ?`;
+    queryData3 = [coaches];
+  } else {
+    query3 = `INSERT INTO tryoutCoaches SET tryoutId = ?, userId = UNHEX(?), primaryCoach = ?, createdAt = NOW(),
+      updatedAt = NOW()`;
+    queryData3 = [id, req.user.id, true];
+  }
 
-  queryData2 = [
+  query = `INSERT INTO tryouts SET id = ?, teamId = UNHEX(?), userId = UNHEX(?), formulaId = UNHEX(?), name = ?,
+    street = ?, city = ?, state = ?, zip = ?, country = ?, date = ?, started = ?, numberPlayers = ?,
+    createdAt = NOW(), updatedAt = NOW()`;
+
+  queryData = [
     id,
     req.body.teamId,
+    req.user.id,
+    req.body.formulaId ? req.body.formulaId : null,
     req.body.name,
-    req.body.street
-    req.body.city
-    req.body.state
-    req.body.zip
-    req.body.country
+    req.body.street ? req.body.street : null,
+    req.body.city ? req.body.city : null,
+    req.body.state ? req.body.state : null,
+    req.body.zip ? req.body.zip : null,
+    req.body.country ? req.body.country : null,
+    new Date(req.body.date),
+    false,
+    tempPlayers.length
   ];
 
+  console.log(queryData3);
+
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .spread(data => {
-      if (!data[0] || !data[0].teamId)
-        throw { status: 400, message: "notHeadCoach" };
-      return Promise.using(getConnection(), connection => connection.execute(query2, queryData2))
-    })
-    .then(data => res.status(200).json(id))
+    .then(() => Promise.using(getConnection(), connection => connection.query(query2, queryData2)))
+    .then(() => Promise.using(getConnection(), connection => connection.query(query3, queryData3)))
+    .then(data => res.status(200).json(id.toString('hex')))
     .catch(error => {
+      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

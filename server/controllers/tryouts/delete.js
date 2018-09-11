@@ -8,10 +8,9 @@ module.exports = async (req, res) => {
   if (!req.body.tryoutId || !req.body.teamId)
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `DELETE FROM tryouts WHERE id = UNHEX(?) AND teamId = (SELECT teamId FROM coaches WHERE userId = UNHEX(?)
-    AND teamId = UNHEX(?) AND coachType > 99 LIMIT 1) LIMIT 1`
+  query = `DELETE FROM tryouts WHERE id = UNHEX(?) AND userId = UNHEX(?) LIMIT 1`
 
-  queryData = [ req.body.tryoutId, req.user.id, req.body.teamId ];
+  queryData = [ req.body.tryoutId, req.user.id];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.end())

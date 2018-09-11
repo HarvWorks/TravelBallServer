@@ -14,13 +14,17 @@ module.exports = async (req, res) => {
   query = `UPDATE players SET `;
 
   if (req.body.teamId) {
-    const tempQuery = `SELECT HEX(teamId) teamId, coachType FROM userTeams WHERE userId = UNHEX(?) AND teamId = UNHEX(?)`;
-    const tempQueryData = [ req.user.id, req.body.teamId ];
-    const teamData = await Promise.using(getConnection(), connection => connection.execute(tempQuery, tempQueryData));
-    if (teamData[0] && teamData[0].teamId) {
-      query += `teamId = ? `;
-      queryData.push(req.body.teamId)
-      queryAdded = true;
+    try {
+      const tempQuery = `SELECT HEX(teamId) teamId, coachType FROM userTeams WHERE userId = UNHEX(?) AND teamId = UNHEX(?)`;
+      const tempQueryData = [ req.user.id, req.body.teamId ];
+      const teamData = await Promise.using(getConnection(), connection => connection.execute(tempQuery, tempQueryData));
+      if (teamData[0] && teamData[0].teamId) {
+        query += `teamId = ? `;
+        queryData.push(req.body.teamId)
+        queryAdded = true;
+      }
+    } catch (error) {
+      return res.status(400).json({ message: "admin", error: error });
     }
   }
 

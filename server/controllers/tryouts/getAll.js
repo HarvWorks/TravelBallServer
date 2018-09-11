@@ -5,14 +5,14 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  query = `SELECT HEX(id) id, HEX(teamId) teamId, name, street, city, state, zip, country, tryouts.createdAt createdAt,
-    tryouts.updatedAt updatedAt FROM tryouts LEFT JOIN tryoutCoaches on tryouts.teamId = tryoutCoaches.teamId
-    WHERE userId = UNHEX(?)`;
+  query = `SELECT HEX(id) id, HEX(teamId) teamId, name, street, city, state, zip, country, date, tryouts.createdAt createdAt,
+    tryouts.updatedAt updatedAt FROM tryouts LEFT JOIN tryoutCoaches on id = tryoutId
+    WHERE tryouts.userId = UNHEX(?)`;
 
   queryData = [ req.user.id ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .then(data => res.status(200).json(data[0]))
+    .spread(data => res.status(200).json(data))
     .catch(error => {
       if (error.status)
         return res.status(error.status).json({ message: error.message });

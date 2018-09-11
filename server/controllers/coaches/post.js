@@ -1,34 +1,59 @@
 const Promise           = require("bluebird"),
       getConnection     = require("../../config/mysql"),
+      Bcrypt            = Promise.promisifyAll(require("bcrypt")),
       crypto            = require('crypto');
 
-module.exports = async (req, res) => {
+module.exports = (req, res) => {
   let query       = ``,
       query2      = ``,
       queryData   = [],
-      queryData2  = [];
+      queryData2  = [],
+      coach       = [],
+      id          = '';
 
-  if (!req.body.userId || !req.body.teamId)
-    return res.status(400).json({ message: "missingFields"  });
+  if (!req.body.email)
+    return res.status(400).json({ message: "missingFields" });
 
-  query = `SELECT teamId FROM coaches WHERE userId = UNHEX(?) AND teamId = UNHEX(?) AND coachType > 99`;
+  // Validate email:
+	if (!/@/.test(req.body.email))
+    return res.status(400).json({ message: "invalidEmail." });
 
-  query2 = `INSERT INTO coaches SET userId = UNHEX(?), teamId = UNHEX(?), coachType = 1, createdAt = NOW(), updatedAt = NOW()`;
+  query = `SELECT HEX(id) id, verified FROM users WHERE email = ?`;
 
-  queryData = [ req.user.id, req.body.teamId ];
+  query2 = `INSERT IGNORE INTO userRelationship (userId1, userId2, createdAt, updatedAt) VALUES ?`;
 
-  queryData2 = [ req.body.userId, req.body.teamId ];
+  queryData = [ req.body.email ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .spread(data => {
-      if (!data[0] || !data[0].teamId)
-        throw { status: 400, message: "notHeadCoach" };
-      return Promise.using(getConnection(), connection => connection.execute(query2, queryData2))
+      coach = data;
+      if (!coach[0] || !coach[0].id) {
+        id = crypto.randomBytes(16);
+        password = Math.random().toString(36).slice(-10);
+        return Bcrypt.hashAsync(password, 10);
+      }
     })
-    .then(data => res.status(200).json(data[0]))
-    .catch(error => {
+    .then(hash => {
+      if (!coach[0] || !coach[0].id) {
+        query = `INSERT INTO users SET id = ?, email = ?, password = ?, verified = -1, createdAt = NOW(), updatedAt = NOW()`;
+        queryData = [ id, req.body.email, hash ];
+        return Promise.using(getConnection(), connection => connection.execute(query, queryData))
+      } else {
+        id = coach[0].id
+      }
+    })
+    .then(() => {
+      queryData2 = [
+        [ new Buffer(req.user.id, 'hex'), new Buffer(id, 'hex'), "NOW()", "NOW()" ],
+        [ new Buffer(id, 'hex'), new Buffer(req.user.id, 'hex'), "NOW()", "NOW()" ]
+      ];
+      return Promise.using(getConnection(), connection => connection.query(query2, [queryData2]));
+    })
+    .then(() => res.status(200).json(id.toString('hex')))
+    .catch((error) => {
+      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });
-    });
+    })
 }
