@@ -52,6 +52,7 @@ module.exports = function (app) {
 
 	app.delete('/api/player', players.delete); // Delete the player
 	app.get('/api/player', players.getAll); // Get all the players of that user
+	app.get('/api/player/recent', players.getRecent); // Get all the players of that user
 	app.get('/api/player/:id', players.get); // Get one player
 	app.post('/api/player', players.post); // Add a new player
 	app.put('/api/player', players.put); // Update an player

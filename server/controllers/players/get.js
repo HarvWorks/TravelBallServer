@@ -16,10 +16,10 @@ module.exports = async (req, res) => {
     players.updatedAt updatedAt FROM players LEFT JOIN userTeams ON players.teamId = userTeams.teamId WHERE
     userId = UNHEX(?) AND players.id = UNHEX(?) LIMIT 1`;
 
-  query2 = `SELECT HEX(assestments.id) id, HEX(teamId) teamId, HEX(tryoutCoaches.tryoutId) tryoutId, name, street, city,
+  query2 = `SELECT HEX(teamId) teamId, HEX(tryoutCoaches.tryoutId) tryoutId, name, street, city,
     state, zip, country, date, tryouts.createdAt createdAt, tryouts.updatedAt updatedAt FROM assestments LEFT JOIN
     tryouts ON assestments.tryoutId = tryouts.id LEFT JOIN tryoutCoaches ON tryouts.id = tryoutCoaches.tryoutId WHERE
-    userId = UNHEX(?) AND assestments.playerId = UNHEX(?)`;
+    tryoutCoaches.userId = UNHEX(?) AND assestments.playerId = UNHEX(?)`;
 
   queryData = [ req.user.id, req.params.id ];
 
@@ -37,6 +37,7 @@ module.exports = async (req, res) => {
       return res.status(200).json(results[0])
     })
     .catch(error => {
+      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

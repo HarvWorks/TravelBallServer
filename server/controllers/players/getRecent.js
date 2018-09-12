@@ -5,15 +5,12 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  if (!req.params.id)
-    return res.status(400).json({ message: "missingFields"  });
+  query = `SELECT HEX(players.id) id, HEX(players.teamId) teamId, firstName, lastName, teamNumber, birthday, position,
+    throwingArm, battingArm, phoneNumber, email, parentFirstName, parentLastName, players.createdAt createdAt,
+    players.updatedAt updatedAt FROM players LEFT JOIN userTeams ON players.teamId = userTeams.teamId WHERE
+    userId = UNHEX(?) ORDER BY players.updatedAt DESC LIMIT 10`;
 
-  query = `SELECT HEX(playerId) playerId, HEX(teamId) teamId, firstName, lastName, assestments.createdAt,
-    assestments.updatedAt FROM tryoutCoaches LEFT JOIN assestments ON tryoutCoaches.tryoutId =
-    assestments.tryoutId LEFT JOIN players ON playerId = players.id WHERE tryoutCoaches.userId = UNHEX(?) AND
-    tryoutCoaches.tryoutId = UNHEX(?)`;
-
-  queryData = [ req.user.id, req.params.id ];
+  queryData = [ req.user.id ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.status(200).json(data[0]))
