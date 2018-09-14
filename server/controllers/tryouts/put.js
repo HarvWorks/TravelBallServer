@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
   if (req.body.formulaId) {
     if (queryAdded)
       query += `, `
-    query += `formulaId = ? `;
+    query += `formulaId = UNHEX(?) `;
     queryData.push(req.body.formulaId)
     queryAdded = true;
   }
