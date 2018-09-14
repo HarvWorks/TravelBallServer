@@ -4,7 +4,7 @@ const 	assessment		= require('../controllers/assessment/index.js'),
 				formulas			= require('../controllers/formulas/index.js'),
 				players				= require('../controllers/players/index.js'),
 				teams					= require('../controllers/teams/index.js'),
-				tryoutcoaches	= require('../controllers/tryoutcoaches/index.js'),
+				tryoutcoaches	= require('../controllers/tryoutCoaches/index.js'),
 				tryouts				= require('../controllers/tryouts/index.js'),
 				users					= require('../controllers/users/index.js');
 
