@@ -34,7 +34,6 @@ module.exports = async (req, res) => {
     .then(() => Promise.using(getConnection(), connection => connection.execute(query2, queryData2)))
     .then(data => res.status(200).json(id.toString('hex')))
     .catch(error => {
-      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

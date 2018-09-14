@@ -4,6 +4,7 @@ const 	assessment		= require('../controllers/assessment/index.js'),
 				formulas			= require('../controllers/formulas/index.js'),
 				players				= require('../controllers/players/index.js'),
 				teams					= require('../controllers/teams/index.js'),
+				tryoutcoaches	= require('../controllers/tryoutcoaches/index.js'),
 				tryouts				= require('../controllers/tryouts/index.js'),
 				users					= require('../controllers/users/index.js');
 
@@ -13,10 +14,9 @@ module.exports = function (app) {
 	//                   Assestments routes                   //
 	////////////////////////////////////////////////////////////
 
-	app.delete('/api/assessment', assessment.delete); // Delete the assessment
 	app.get('/api/assessment/one/:id', assessment.get); // Get one assessment
 	app.get('/api/assessment/tryout/:id', assessment.getAll); // Get all the assessments of that tryout
-	app.post('/api/assessment', assessment.post); // Add a new assessment
+	app.post('/api/assessment', assessment.post); // Expects an array called players that should be in the tryouts.  Will delete and post as nessecary
 	app.put('/api/assessment', assessment.put); // Update an assestment
 
 	////////////////////////////////////////////////////////////
@@ -66,6 +66,12 @@ module.exports = function (app) {
 	app.get('/api/team/:id', teams.get); // Get that team's detailed info
 	app.post('/api/team', teams.post); // Add a new team
 	app.put('/api/team', teams.put); // Update an team
+
+	////////////////////////////////////////////////////////////
+	//                  Tryout Coaches routes                 //
+	////////////////////////////////////////////////////////////
+
+	app.post('/api/tryoutcoaches', tryoutcoaches.post); // Provide a list to this route and it will add and remove the necessary coaches
 
 	////////////////////////////////////////////////////////////
 	//                     Tryouts routes                     //

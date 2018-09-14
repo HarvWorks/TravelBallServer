@@ -14,7 +14,6 @@ module.exports = async (req, res) => {
     !req.body.players ||
     !req.body.players[0] ||
     !req.body.players[0].firstName ||
-    !req.body.players[0].teamNumber ||
     !req.body.players[0].position ||
     !req.body.players[0].throwingArm ||
     !req.body.players[0].battingArm

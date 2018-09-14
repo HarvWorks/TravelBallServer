@@ -7,14 +7,11 @@ module.exports = async (req, res) => {
 
   if (!req.params.id)
     return res.status(400).json({ message: "missingFields" });
-    console.log(req.params.id);
 
   const idArray = req.params.id.split("+");
 
   if (idArray.length !== 2)
     return res.status(400).json({ message: "missingFields" });
-
-  console.log(idArray);
 
   query = `SELECT HEX(assestments.tryoutId) tryoutId, HEX(playerId) playerId, hittingMechanics, hittingMechanicsNotes,
     batSpeed, batSpeedNotes, batContact, batContactNotes, throwingMechanics, throwingMechanicsNotes, armStrength,
@@ -27,12 +24,8 @@ module.exports = async (req, res) => {
   queryData = [ req.user.id, idArray[0], idArray[1] ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .spread(data => {
-      console.log(data);
-      return res.status(200).json(data[0])
-    })
+    .spread(data => res.status(200).json(data[0]))
     .catch(error => {
-      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

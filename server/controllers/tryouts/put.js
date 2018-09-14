@@ -6,10 +6,10 @@ module.exports = async (req, res) => {
       queryData   = []
       queryAdded  = false;
 
-  if (!req.body.teamId && !req.body.tryoutId)
+  if (!req.body.id)
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `UPDATE teams SET `;
+  query = `UPDATE tryouts SET `;
 
   if (req.body.name) {
     query += `name = ? `;
@@ -60,15 +60,19 @@ module.exports = async (req, res) => {
   if (!queryAdded)
     return res.status(200).json({ message: "emptyFields" });
 
-  query += `, updatedAt = NOW() WHERE userId = UNHEX(?) AND id = UNHEX(?) LIMIT 1`;
+  query += `, updatedAt = NOW() WHERE id IN (SELECT tryoutId FROM tryoutCoaches WHERE tryoutId = UNHEX(?)
+    AND userId = UNHEX(?)) LIMIT 1`;
 
+  queryData.push(req.body.id);
   queryData.push(req.user.id);
-  queryData.push(req.body.tryoutId);
-
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .then(data => res.end())
+    .then(data => {
+      console.log(data);
+      return res.end()
+    })
     .catch(error => {
+      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

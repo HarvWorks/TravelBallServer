@@ -17,16 +17,16 @@ module.exports = async (req, res) => {
     !req.body.teamId ||
     !req.body.name ||
     !req.body.date ||
-    !req.body.playerIds ||
-    !req.body.playerIds[0] ||
-    !req.body.playerIds[0].value
+    !req.body.players ||
+    !req.body.players[0] ||
+    !req.body.players[0].value
   )
     return res.status(400).json({ message: "missingFields" });
 
   const id = crypto.randomBytes(16);
 
-  tempPlayers = req.body.playerIds;
-  if ( req.body.playerIds.length > 1 ) {
+  tempPlayers = req.body.players;
+  if ( req.body.players.length > 1 ) {
     length = tempPlayers.length;
     for (let i = 0; i < length; i ++) {
       if (!/^[0-9a-fA-F]{32}$/.test(tempPlayers[i].value)){
@@ -41,8 +41,8 @@ module.exports = async (req, res) => {
     queryData2 = [id, tempPlayers[0].value];
   }
 
-  if ( req.body.coachIds && req.body.coachIds[0] && req.body.coachIds[0].value ) {
-    tempCoaches = req.body.coachIds;
+  if ( req.body.coaches && req.body.coaches[0] && req.body.coaches[0].value ) {
+    tempCoaches = req.body.coaches;
     length = tempCoaches.length;
     for (let i = 0; i < length; i ++) {
       if (!/^[0-9a-fA-F]{32}$/.test(tempCoaches[i].value)){

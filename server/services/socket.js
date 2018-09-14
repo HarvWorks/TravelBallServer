@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 function init(server) {
     var io = socketio(server);
     io.on('connection', (socket) => {
-        console.log("socket connected");
         socket.on('join-league', (token) => {
           jwt.verify(token, jwtKey, (err, decode) => {
             if (!err) {

@@ -5,12 +5,12 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  if (!req.body.id)
+  if (!req.body.playerIds || !req.body.playerIds[0] || !req.body.tryoutId)
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `DELETE FROM assestments WHERE userId = UNHEX(?) AND id = UNHEX(?) LIMIT 1`
+  query = `DELETE FROM assestments WHERE tryoutId = ? AND playerId IN ?`
 
-  queryData = [ req.user.id, req.body.id ];
+  queryData = [ req.body.tryoutId, req.user.id, req.body.playerId ];
 
   query2 = `UPDATE tryouts SET numberPlayers = numberPlayers + 1 WHERE tryoutId = UNHEX(?)`;
 

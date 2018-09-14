@@ -25,19 +25,16 @@ module.exports = async (req, res) => {
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .spread(data => {
-      console.log('first query', data);
       results = data;
       return Promise.using(getConnection(), connection => connection.execute(query2, queryData))
     })
     .spread(data => {
-      console.log('second query', results);
       if (results[0] && results[0].id) {
         results[0].assessment = data
       }
       return res.status(200).json(results[0])
     })
     .catch(error => {
-      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

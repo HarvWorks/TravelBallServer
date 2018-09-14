@@ -4,60 +4,61 @@ const Promise           = require("bluebird"),
 
 module.exports = async (req, res) => {
   let query       = ``,
-      queryData   = [];
+      query2      = ``,
+      query3      = ``,
+      query4      = ``,
+      queryData   = []
+      queryData2  = [],
+      queryData3  = [],
+      queryData4  = [],
+      length      = 0,
+      tryoutId    = '',
+      tempPlayers = [],
+      players     = [],
+      playerIds   = [];
 
-  if (!req.body.tryoutId || !req.body.playerId)
-    return res.status(400).json({ message: "missingFields"  });
+  if (!req.body.id || !req.body.players || !req.body.players[0] || !req.body.players[0].value)
+    return res.status(400).json({ message: "missingFields" });
 
-  query = `INSERT INTO assestments SET id = UNHEX(?), playerId = UNHEX(?), userId = UNHEX(?), tryoutId = UNHEX(?),
-    hittingMechanics = ?, hittingMechanicsNotes = ?, batSpeed = ?, batSpeedNotes = ?, batContact = ?, batContactNotes =?,
-    throwingMechanics = ?, throwingMechanicsNotes = ?, armStrength = ?, armStrengthNotes = ?, armAccuracy = ?,
-    armAccuracyNotes = ?, inField = ?, inFieldNotes = ?, outField = ?, outFieldNotes = ?, baserunMechanics = ?,
-    baserunMechanicsNotes = ?, baserunSpeed = ?, baserunSpeedNotes = ?, heart = ?, heartNotes = ?, attitude = ?,
-    attitudeNotes = ?, coachability = ?, coachabilityNotes = ?, createdAt = NOW(), updatedAt = NOW()`;
-
-  const id = crypto.randomBytes(16).toString('hex')
-
-  queryData = [
-    id,
-    req.body.playerId,
-    req.user.id,
-    req.body.tryoutId,
-    req.body.hittingMechanics ? req.body.hittingMechanics : null,
-    req.body.hittingMechanicsNotes ? req.body.hittingMechanicsNotes : null,
-    req.body.batSpeed ? req.body.batSpeed : null,
-    req.body.batSpeedNotes ? req.body.batSpeedNotes : null,
-    req.body.batContact ? req.body.batContact : null,
-    req.body.batContactNotes ? req.body.batContactNotes : null,
-    req.body.throwingMechanics ? req.body.throwingMechanics : null,
-    req.body.throwingMechanicsNotes ? req.body.throwingMechanicsNotes : null,
-    req.body.armStrength ? req.body.armStrength : null,
-    req.body.armStrengthNotes ? req.body.armStrengthNotes : null,
-    req.body.armAccuracy ? req.body.armAccuracy : null,
-    req.body.armAccuracyNotes ? req.body.armAccuracyNotes : null,
-    req.body.inField ? req.body.inField : null,
-    req.body.inFieldNotes ? req.body.inFieldNotes : null,
-    req.body.outField ? req.body.outField : null,
-    req.body.outFieldNotes ? req.body.outFieldNotes : null,
-    req.body.baserunSpeed ? req.body.baserunSpeed : null,
-    req.body.baserunSpeedNotes ? req.body.baserunSpeedNotes : null,
-    req.body.baserunMechanics ? req.body.baserunMechanics : null,
-    req.body.baserunMechanicsNotes ? req.body.baserunMechanicsNotes : null,
-    req.body.heart ? req.body.heart : null,
-    req.body.heartNotes ? req.body.heartNotes : null,
-    req.body.attitude ? req.body.attitude : null,
-    req.body.attitudeNotes ? req.body.attitudeNotes : null,
-    req.body.coachability ? req.body.coachability : null,
-    req.body.coachabilityNotes ? req.body.coachabilityNotes : null,
-  ];
-
-  query2 = `UPDATE tryouts SET numberPlayers = numberPlayers + 1 WHERE tryoutId = UNHEX(?)`;
-
-  queryData2  = [ req.body.tryoutId ];
+  query = `SELECT tryoutId FROM tryoutCoaches WHERE tryoutId = UNHEX(?) AND userId = UNHEX(?)`;
+  queryData = [ req.body.id, req.user.id ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .then(() => Promise.using(getConnection(), connection => connection.execute(query2, queryData2)))
-    .then(() => res.status(200).json(id))
+    .spread(data => {
+      if (!data[0] && !data[0].tryoutId)
+        throw {status: 400, message: 'Looks like you are not part of this team.'}
+      tryoutId = data[0].tryoutId;
+
+      // Now add the queries to both delete the extra players and add in the new ones
+      tempPlayers = req.body.players;
+      if ( req.body.players.length > 1 ) {
+        length = tempPlayers.length;
+        for (let i = 0; i < length; i ++) {
+          if (!/^[0-9a-fA-F]{32}$/.test(tempPlayers[i].value)){
+            throw { status: 400, message: "badUUID" };
+          }
+          playerIds.push(new Buffer(tempPlayers[i].value, 'hex'))
+          players.push([tryoutId, new Buffer(tempPlayers[i].value, 'hex'), "NOW()", "NOW()"])
+        }
+        query2 = `DELETE FROM assestments WHERE tryoutId = ? AND playerId NOT IN (?)`;
+        queryData2 = [tryoutId, playerIds];
+        query3 = `INSERT IGNORE INTO assestments (tryoutId, playerId, createdAt, updatedAt) VALUES ?`;
+        queryData3 = [players];
+      } else {
+        query2 = `DELETE FROM assestments WHERE tryoutId = ? AND playerId NOT IN (?)`;
+        queryData2 = [tryoutId, tempPlayers[0].value];
+        query3 = `INSERT IGNORE INTO assestments SET tryoutId = ?, playerId = UNHEX(?), createdAt = NOW(), updatedAt = NOW()`;
+        queryData3 = [tryoutId, tempPlayers[0].value];
+      }
+      // Also set up the query for counting the number of players
+      query4 = `UPDATE tryouts SET numberPlayers = ? WHERE id = ?`;
+      queryData4  = [ players.length, tryoutId ];
+
+      return Promise.using(getConnection(), connection => connection.query(query2, queryData2))
+    })
+    .then(() => Promise.using(getConnection(), connection => connection.query(query3, queryData3)))
+    .then(() => Promise.using(getConnection(), connection => connection.execute(query4, queryData4)))
+    .then(data => res.status(200).json())
     .catch(error => {
       if (error.status)
         return res.status(error.status).json({ message: error.message });

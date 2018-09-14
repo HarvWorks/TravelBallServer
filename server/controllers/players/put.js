@@ -9,8 +9,6 @@ module.exports = async (req, res) => {
   if (!req.body.id)
     return res.status(400).json({ message: "missingFields"  });
 
-    console.log('udpating player', req.body);
-
   query = `UPDATE players SET `;
 
   if (req.body.teamId) {
