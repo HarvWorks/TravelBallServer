@@ -57,6 +57,14 @@ module.exports = async (req, res) => {
     queryAdded = true;
   }
 
+  if (req.body.formulaId) {
+    if (queryAdded)
+      query += `, `
+    query += `formulaId = ? `;
+    queryData.push(req.body.formulaId)
+    queryAdded = true;
+  }
+
   if (!queryAdded)
     return res.status(200).json({ message: "emptyFields" });
 
