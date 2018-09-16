@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
 
   // Expected login data
 	if (!req.body.email || !req.body.password)
-    return res.status(400).json({ message: "missingFields"  });
+    return res.status(400).json({ message: "loginErr"  });
 
   // Validate email:
   if (!/@/.test(req.body.email))
@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
 
   // Pre-validate password:
 	if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d$@$!%*?&](?=.{7,})/.test(req.body.password))
-		return res.status(400).json({ message: "passwordErr" });
+		return res.status(400).json({ message: "loginErr" });
 
   query = `SELECT HEX(id) id, password FROM users WHERE email = ? LIMIT 1`;
 
