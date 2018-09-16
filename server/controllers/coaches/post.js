@@ -1,6 +1,9 @@
 const Promise           = require("bluebird"),
       getConnection     = require("../../config/mysql"),
       Bcrypt            = Promise.promisifyAll(require("bcrypt")),
+      nodeMailer        = require('../../config/nodemailer'),
+      serverKeys        = require("../../../keys/keys"),
+      generator         = require('generate-password'),
       crypto            = require('crypto');
 
 module.exports = (req, res) => {
@@ -9,6 +12,7 @@ module.exports = (req, res) => {
       queryData   = [],
       queryData2  = [],
       coach       = [],
+      password    = '',
       id          = '';
 
   if (!req.body.email)
@@ -29,7 +33,10 @@ module.exports = (req, res) => {
       coach = data;
       if (!coach[0] || !coach[0].id) {
         id = crypto.randomBytes(16);
-        password = Math.random().toString(36).slice(-10);
+        password = generator.generate({
+          length: 10,
+          numbers: true
+        });
         return Bcrypt.hashAsync(password, 10);
       }
     })
@@ -40,6 +47,27 @@ module.exports = (req, res) => {
         return Promise.using(getConnection(), connection => connection.execute(query, queryData))
       } else {
         id = coach[0].id
+      }
+    })
+    .then(() => {
+      if (!coach[0] || !coach[0].id) {
+        query = `SELECT email from users WHERE id = UNHEX(?)`;
+        queryData = [ req.user.id ];
+        return Promise.using(getConnection(), connection => connection.execute(query, queryData))
+      }
+    })
+    .spread(inviterEmail => {
+      if (!coach[0] || !coach[0].id) {
+        const dataPackage = {
+          password: password,
+          inviterEmail: inviterEmail[0].email,
+          email: req.body.email
+        }
+        const emailPackage = nodeMailer.inviteCoaches(dataPackage);
+        nodeMailer.mailOptions.to = req.body.email;
+        nodeMailer.mailOptions.subject = emailPackage.subject;
+        nodeMailer.mailOptions.html = emailPackage.html;
+        return nodeMailer.transporter.sendMail(nodeMailer.mailOptions)
       }
     })
     .then(() => {

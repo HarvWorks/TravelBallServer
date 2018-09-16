@@ -16,7 +16,7 @@ const mailOptions = {
 
 const resetPassword = data => {
   return {
-    subject:`Resetting Travelball password`,
+    subject: `Resetting TravelBall password`,
     html: `<p><span style="padding-bottom:2em;display:block">Hello,</span>
       <span style="padding-bottom:1em;display:block">Your password has been reset for TravelBall. Here is your new password:</span>
       <span style="padding-bottom:1em;display:block">` + data.password + `</span>
@@ -28,23 +28,18 @@ const resetPassword = data => {
 };
 
 const inviteCoaches = data => {
-  return new Promise((resolve, reject) => {
-    let replaced = ""
-    const html = `<p><span style="padding-bottom:2em;display:block">Hello,</span>
-  <span style="padding-bottom:0.5em;display:block">Congratulations! You have been added as coach for %%name%% by
-    .  You can now sign into either your Youthdraft mobile app or at <a href='http://Youthdraft.com'>
-      Youthdraft.com</a> using your email and the following password:</span>
-    <span style="padding-bottom:0.5em;display:block">%%password%%</span>
-    <span style="padding-bottom:2em;display:block">Once inside your account, please remember to change your password to
-      something more memorable.</span>
-    <span style="display:block">Sincerely,</span>
-    <span style="display:block">The Youthdraft Team</span>`;
-    const parts = html.split(/(\%\%\w+?\%\%)/g).map(function(v) {
-      replaced = v.replace(/\%\%/g,"");
-      return data[replaced] || replaced;
-    });
-    resolve(parts.join(""))
-  })
+  return {
+    subject: `You have been invited to TravelBall`,
+    html : `<p><span style="padding-bottom:2em;display:block">Hello,</span>
+      <span style="padding-bottom:0.5em;display:block">Congratulations! You have been invited to TravelBall by ` +
+      data.inviterEmail + `.  You can download the TravelBall app on the iOS AppStore.
+      <span style="padding-bottom:1em;display:block">Use the provided email address: ` + data.email +
+      `<span style="padding-bottom:2em;display:block">And this password: ` + data.password +
+      `<span style="padding-bottom:2em;display:block">Once inside your account, please remember to change your password to
+        something more memorable.</span>
+      <span style="display:block">Sincerely,</span>
+      <span style="display:block">The Youthdraft Team</span>`
+  }
 };
 
 module.exports =  {
