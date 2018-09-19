@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
       coachIds   = [];
 
 
-  if (!req.body.id || !req.body.coaches || !req.body.coaches[0] || !req.body.coaches[0].value)
+  if (!req.body.id || !req.body.coaches || req.body.coaches[0] && !req.body.coaches[0].value)
     return res.status(400).json({ message: "missingFields" });
 
   query = `SELECT tryoutId FROM tryoutCoaches WHERE tryoutId = UNHEX(?) AND userId = UNHEX(?)`;
@@ -31,7 +31,8 @@ module.exports = async (req, res) => {
       tryoutId = data[0].tryoutId;
 
       // Now add the queries to both delete the extra coaches and add in the new ones
-      tempCoaches = req.body.coaches;
+      tempCoaches = req.body.coaches ? req.body.coaches : [];
+      // Add the owner of the tryouts
       tempCoaches.push({value: req.user.id})
       if ( req.body.coaches.length > 1 ) {
         length = tempCoaches.length;
