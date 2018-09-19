@@ -80,7 +80,6 @@ module.exports = (req, res) => {
     })
     .then(() => res.status(200).json(id.toString('hex')))
     .catch((error) => {
-      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

@@ -10,8 +10,6 @@ module.exports = async (req, res) => {
       queryData3  = [],
       results     = {};
 
-      console.log(req.params.id);
-
 
   query = `SELECT HEX(id) id, HEX(teamId) teamId, HEX(formulaId) formulaId, HEX(tryouts.userId) ownerId, name, street,
     city, state, zip, country, date, tryouts.createdAt createdAt, tryouts.updatedAt updatedAt FROM tryouts LEFT JOIN
@@ -45,11 +43,9 @@ module.exports = async (req, res) => {
     })
     .spread(data => {
       results.players = data;
-      console.log(results);
       return res.status(200).json(results);
     })
     .catch(error => {
-      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

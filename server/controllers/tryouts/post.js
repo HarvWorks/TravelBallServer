@@ -81,14 +81,11 @@ module.exports = async (req, res) => {
     tempPlayers.length
   ];
 
-  console.log(queryData3);
-
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(() => Promise.using(getConnection(), connection => connection.query(query2, queryData2)))
     .then(() => Promise.using(getConnection(), connection => connection.query(query3, queryData3)))
     .then(data => res.status(200).json(id.toString('hex')))
     .catch(error => {
-      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });
