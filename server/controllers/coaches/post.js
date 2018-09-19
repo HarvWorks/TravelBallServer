@@ -40,6 +40,11 @@ module.exports = (req, res) => {
     })
     .spread(inviterEmail => {
       if (!coach[0] || !coach[0].id) {
+        id = crypto.randomBytes(16);
+        password = generator.generate({
+          length: 10,
+          numbers: true
+        });
         const dataPackage = {
           password: password,
           inviterEmail: inviterEmail[0].email,
@@ -54,11 +59,6 @@ module.exports = (req, res) => {
     })
     .then(() => {
       if (!coach[0] || !coach[0].id) {
-        id = crypto.randomBytes(16);
-        password = generator.generate({
-          length: 10,
-          numbers: true
-        });
         return Bcrypt.hashAsync(password, 10);
       }
     })
