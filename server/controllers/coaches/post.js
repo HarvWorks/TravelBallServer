@@ -35,6 +35,8 @@ module.exports = (req, res) => {
         query = `SELECT email from users WHERE id = UNHEX(?)`;
         queryData = [ req.user.id ];
         return Promise.using(getConnection(), connection => connection.execute(query, queryData))
+      } else {
+        id = coach[0].id
       }
       return [];
     })
@@ -67,8 +69,6 @@ module.exports = (req, res) => {
         query = `INSERT INTO users SET id = ?, email = ?, password = ?, verified = -1, createdAt = NOW(), updatedAt = NOW()`;
         queryData = [ id, req.body.email, hash ];
         return Promise.using(getConnection(), connection => connection.execute(query, queryData))
-      } else {
-        id = coach[0].id
       }
     })
     .then(() => {
