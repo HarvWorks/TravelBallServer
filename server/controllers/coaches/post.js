@@ -32,25 +32,6 @@ module.exports = (req, res) => {
     .spread(data => {
       coach = data;
       if (!coach[0] || !coach[0].id) {
-        id = crypto.randomBytes(16);
-        password = generator.generate({
-          length: 10,
-          numbers: true
-        });
-        return Bcrypt.hashAsync(password, 10);
-      }
-    })
-    .then(hash => {
-      if (!coach[0] || !coach[0].id) {
-        query = `INSERT INTO users SET id = ?, email = ?, password = ?, verified = -1, createdAt = NOW(), updatedAt = NOW()`;
-        queryData = [ id, req.body.email, hash ];
-        return Promise.using(getConnection(), connection => connection.execute(query, queryData))
-      } else {
-        id = coach[0].id
-      }
-    })
-    .then(() => {
-      if (!coach[0] || !coach[0].id) {
         query = `SELECT email from users WHERE id = UNHEX(?)`;
         queryData = [ req.user.id ];
         return Promise.using(getConnection(), connection => connection.execute(query, queryData))
@@ -71,6 +52,25 @@ module.exports = (req, res) => {
       }
     })
     .then(() => {
+      if (!coach[0] || !coach[0].id) {
+        id = crypto.randomBytes(16);
+        password = generator.generate({
+          length: 10,
+          numbers: true
+        });
+        return Bcrypt.hashAsync(password, 10);
+      }
+    })
+    .then(hash => {
+      if (!coach[0] || !coach[0].id) {
+        query = `INSERT INTO users SET id = ?, email = ?, password = ?, verified = -1, createdAt = NOW(), updatedAt = NOW()`;
+        queryData = [ id, req.body.email, hash ];
+        return Promise.using(getConnection(), connection => connection.execute(query, queryData))
+      } else {
+        id = coach[0].id
+      }
+    })
+    .then(() => {
       queryData2 = [
         [ new Buffer(req.user.id, 'hex'), new Buffer(id, 'hex'), "NOW()", "NOW()" ],
         [ new Buffer(id, 'hex'), new Buffer(req.user.id, 'hex'), "NOW()", "NOW()" ]
@@ -79,6 +79,7 @@ module.exports = (req, res) => {
     })
     .then(() => res.status(200).json(id.toString('hex')))
     .catch((error) => {
+      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });

@@ -1,9 +1,13 @@
 const nodemailer = require('nodemailer');
+const aws = require('aws-sdk');
 const key = require('../../keys/keys');
 
+aws.config.update({region:'us-west-2'});
+
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: key.auth
+  SES: new aws.SES({
+    apiVersion: '2010-12-01'
+  })
 });
 
 const mailOptions = {
