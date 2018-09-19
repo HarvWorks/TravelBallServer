@@ -36,6 +36,7 @@ module.exports = (req, res) => {
         queryData = [ req.user.id ];
         return Promise.using(getConnection(), connection => connection.execute(query, queryData))
       }
+      return [];
     })
     .spread(inviterEmail => {
       if (!coach[0] || !coach[0].id) {
