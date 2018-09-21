@@ -1,13 +1,12 @@
 const nodemailer = require('nodemailer');
-const aws = require('aws-sdk');
 const key = require('../../keys/keys');
 
-aws.config.update({region:'us-west-2'});
-
 const transporter = nodemailer.createTransport({
-  SES: new aws.SES({
-    apiVersion: '2010-12-01'
-  })
+  service: 'SendPulse', // no need to set host or port etc.
+     auth: {
+         user: key.loginInfo.username,
+         pass: key.loginInfo.password
+     }
 });
 
 const mailOptions = {
