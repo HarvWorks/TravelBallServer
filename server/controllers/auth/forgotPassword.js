@@ -36,7 +36,8 @@ module.exports = (req, res) => {
       id = data[0].id
       password = generator.generate({
         length: 10,
-        numbers: true
+        numbers: true,
+        strict: true
       });
       return Bcrypt.hashAsync(password, 10);
     })

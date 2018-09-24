@@ -45,7 +45,8 @@ module.exports = (req, res) => {
         id = crypto.randomBytes(16);
         password = generator.generate({
           length: 10,
-          numbers: true
+          numbers: true,
+          strict: true
         });
         const dataPackage = {
           password: password,
