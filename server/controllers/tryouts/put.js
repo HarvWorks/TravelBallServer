@@ -17,6 +17,22 @@ module.exports = async (req, res) => {
     queryAdded = true;
   }
 
+  if (req.body.ballParkLocation) {
+    if (queryAdded)
+      query += `, `
+    query += `ballParkLocation = ? `;
+    queryData.push(req.body.ballParkLocation)
+    queryAdded = true;
+  }
+
+  if (req.body.ballParkNotes) {
+    if (queryAdded)
+      query += `, `
+    query += `ballParkNotes = ? `;
+    queryData.push(req.body.ballParkNotes)
+    queryAdded = true;
+  }
+
   if (req.body.street) {
     if (queryAdded)
       query += `, `

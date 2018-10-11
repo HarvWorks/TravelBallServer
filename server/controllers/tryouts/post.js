@@ -16,6 +16,7 @@ module.exports = async (req, res) => {
   if (
     !req.body.teamId ||
     !req.body.name ||
+    !req.body.ballParkLocation ||
     !req.body.date ||
     !req.body.players ||
     !req.body.players[0] ||
@@ -71,6 +72,8 @@ module.exports = async (req, res) => {
     req.user.id,
     req.body.formulaId ? req.body.formulaId : null,
     req.body.name,
+    req.body.ballParkLocation,
+    req.body.ballParkNotes ? req.body.ballParkNotes : null,
     req.body.street ? req.body.street : null,
     req.body.city ? req.body.city : null,
     req.body.state ? req.body.state : null,

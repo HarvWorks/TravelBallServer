@@ -11,9 +11,10 @@ module.exports = async (req, res) => {
       results     = {};
 
 
-  query = `SELECT HEX(id) id, HEX(teamId) teamId, HEX(formulaId) formulaId, HEX(tryouts.userId) ownerId, name, street,
-    city, state, zip, country, date, tryouts.createdAt createdAt, tryouts.updatedAt updatedAt FROM tryouts LEFT JOIN
-    tryoutCoaches on id = tryoutId WHERE tryoutCoaches.userId = UNHEX(?) AND tryoutId = UNHEX(?)`;
+  query = `SELECT HEX(id) id, HEX(teamId) teamId, HEX(formulaId) formulaId, HEX(tryouts.userId) ownerId, name,
+    ballParkLocation, ballParkNotes, street, city, state, zip, country, date, tryouts.createdAt createdAt,
+    tryouts.updatedAt updatedAt FROM tryouts LEFT JOIN tryoutCoaches on id = tryoutId WHERE tryoutCoaches.userId =
+    UNHEX(?) AND tryoutId = UNHEX(?)`;
 
   queryData = [ req.user.id, req.params.id ];
 

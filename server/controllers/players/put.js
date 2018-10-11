@@ -66,6 +66,30 @@ module.exports = async (req, res) => {
     queryAdded = true;
   }
 
+  if (req.body.position2) {
+    if (queryAdded)
+      query += `, `
+    query += `position2 = ? `;
+    queryData.push(req.body.position2)
+    queryAdded = true;
+  }
+
+  if (req.body.pitcher) {
+    if (queryAdded)
+      query += `, `
+    query += `pitcher = ? `;
+    queryData.push(req.body.pitcher)
+    queryAdded = true;
+  }
+
+  if (req.body.catcher) {
+    if (queryAdded)
+      query += `, `
+    query += `catcher = ? `;
+    queryData.push(req.body.catcher)
+    queryAdded = true;
+  }
+
   if (req.body.throwingArm) {
     if (queryAdded)
       query += `, `
@@ -79,6 +103,22 @@ module.exports = async (req, res) => {
       query += `, `
     query += `battingArm = ? `;
     queryData.push(req.body.battingArm)
+    queryAdded = true;
+  }
+
+  if (req.body.parentFirstName) {
+    if (queryAdded)
+      query += `, `
+    query += `parentFirstName = ? `;
+    queryData.push(req.body.parentFirstName)
+    queryAdded = true;
+  }
+
+  if (req.body.parentLastName) {
+    if (queryAdded)
+      query += `, `
+    query += `parentLastName = ? `;
+    queryData.push(req.body.parentLastName)
     queryAdded = true;
   }
 
@@ -102,19 +142,75 @@ module.exports = async (req, res) => {
     queryAdded = true;
   }
 
-  if (req.body.parentFirstName) {
+  if (req.body.parentFirstName2) {
     if (queryAdded)
       query += `, `
-    query += `parentFirstName = ? `;
-    queryData.push(req.body.parentFirstName)
+    query += `parentFirstName2 = ? `;
+    queryData.push(req.body.parentFirstName2)
     queryAdded = true;
   }
 
-  if (req.body.parentLastName) {
+  if (req.body.parentLastName2) {
     if (queryAdded)
       query += `, `
-    query += `parentLastName = ? `;
-    queryData.push(req.body.parentLastName)
+    query += `parentLastName2 = ? `;
+    queryData.push(req.body.parentLastName2)
+    queryAdded = true;
+  }
+
+  if (req.body.phoneNumber2) {
+    if (queryAdded)
+      query += `, `
+    query += `phoneNumber2 = ? `;
+    queryData.push(req.body.phoneNumber2)
+    queryAdded = true;
+  }
+
+  if (req.body.email2) {
+    // Validate email:
+    if (!/@/.test(req.body.email2))
+      return res.status(400).json({ message: "emailErr" });
+
+    if (queryAdded)
+      query += `, `
+    query += `email2 = ? `;
+    queryData.push(req.body.email2)
+    queryAdded = true;
+  }
+
+  if (req.body.emgFirstName) {
+    if (queryAdded)
+      query += `, `
+    query += `emgFirstName = ? `;
+    queryData.push(req.body.emgFirstName)
+    queryAdded = true;
+  }
+
+  if (req.body.emgLastName) {
+    if (queryAdded)
+      query += `, `
+    query += `emgLastName = ? `;
+    queryData.push(req.body.emgLastName)
+    queryAdded = true;
+  }
+
+  if (req.body.emgPhoneNumber) {
+    if (queryAdded)
+      query += `, `
+    query += `emgPhoneNumber = ? `;
+    queryData.push(req.body.emgPhoneNumber)
+    queryAdded = true;
+  }
+
+  if (req.body.emgEmail) {
+    // Validate email:
+    if (!/@/.test(req.body.emgEmail))
+      return res.status(400).json({ message: "emailErr" });
+
+    if (queryAdded)
+      query += `, `
+    query += `emgEmail = ? `;
+    queryData.push(req.body.emgEmail)
     queryAdded = true;
   }
 

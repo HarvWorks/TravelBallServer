@@ -12,9 +12,10 @@ module.exports = async (req, res) => {
     return res.status(400).json({ message: "missingFields"  });
 
   query = `SELECT HEX(players.id) id, HEX(players.teamId) teamId, firstName, lastName, teamNumber, birthday, position,
-    throwingArm, battingArm, phoneNumber, email, parentFirstName, parentLastName, players.createdAt createdAt,
-    players.updatedAt updatedAt FROM players LEFT JOIN userTeams ON players.teamId = userTeams.teamId WHERE
-    userId = UNHEX(?) AND players.id = UNHEX(?) LIMIT 1`;
+    position2, catcher, pitcher, throwingArm, battingArm, phoneNumber, email, parentFirstName, parentLastName,
+    phoneNumber2, email2, parentFirstName2, parentLastName2, emgPhoneNumber, emgEmail, emgFirstName, emgLastName,
+    players.createdAt createdAt, players.updatedAt updatedAt FROM players LEFT JOIN userTeams ON players.teamId =
+    userTeams.teamId WHERE userId = UNHEX(?) AND players.id = UNHEX(?) LIMIT 1`;
 
   query2 = `SELECT HEX(teamId) teamId, HEX(tryoutCoaches.tryoutId) tryoutId, name, street, city,
     state, zip, country, date, tryouts.createdAt createdAt, tryouts.updatedAt updatedAt FROM assestments LEFT JOIN

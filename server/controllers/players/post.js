@@ -12,11 +12,7 @@ module.exports = async (req, res) => {
   if (
     !req.body.teamId ||
     !req.body.players ||
-    !req.body.players[0] ||
-    !req.body.players[0].firstName ||
-    !req.body.players[0].position ||
-    !req.body.players[0].throwingArm ||
-    !req.body.players[0].battingArm
+    !req.body.players[0]
   )
     return res.status(400).json({ message: "missingFields"  });
 
@@ -41,20 +37,44 @@ module.exports = async (req, res) => {
       const playerLength = players.length;
 
       for (let i = 0; i < playerLength; i ++) {
+        if (
+          !players[i].firstName ||
+          !players[i].position ||
+          !players[i].throwingArm ||
+          !players[i].battingArm ||
+          !players[i].parentFirstName ||
+          !players[i].parentLastName ||
+          !players[i].phoneNumber ||
+          !players[i].emgFirstName ||
+          !players[i].emgLastName ||
+          !players[i].emgPhoneNumber
+        )
+          throw { status: 400, message: "missingFields" };
         const tempArray = [];
         tempArray.push(id);
         tempArray.push(teamId);
-        tempArray.push(players[0].firstName);
-        tempArray.push(players[0].lastName ? players[0].lastName : null);
-        tempArray.push(players[0].teamNumber ? players[0].teamNumber : null);
-        tempArray.push(players[0].birthday ? new Date(players[0].birthday) : null);
-        tempArray.push(players[0].position);
-        tempArray.push(players[0].throwingArm);
-        tempArray.push(players[0].battingArm);
-        tempArray.push(players[0].phoneNumber ? players[0].phoneNumber : null);
-        tempArray.push(players[0].email || /@/.test(req.body.email) ? players[0].email : null);
-        tempArray.push(players[0].parentFirstName ? players[0].parentFirstName : null);
-        tempArray.push(players[0].parentLastName ? players[0].parentLastName : null);
+        tempArray.push(players[i].firstName);
+        tempArray.push(players[i].lastName ? players[i].lastName : null);
+        tempArray.push(players[i].teamNumber ? players[i].teamNumber : null);
+        tempArray.push(players[i].birthday ? new Date(players[i].birthday) : null);
+        tempArray.push(players[i].position);
+        tempArray.push(players[i].position2 ? players[i].position2 : null);
+        tempArray.push(players[i].pitcher ? players[i].pitcher : null);
+        tempArray.push(players[i].catcher ? players[i].catcher : null);
+        tempArray.push(players[i].throwingArm);
+        tempArray.push(players[i].battingArm);
+        tempArray.push(players[i].parentFirstName);
+        tempArray.push(players[i].parentLastName);
+        tempArray.push(players[i].phoneNumber);
+        tempArray.push(players[i].email || /@/.test(players[i].email) ? players[i].email : null);
+        tempArray.push(players[i].parentFirstName2 ? players[i].parentFirstName2 : null);
+        tempArray.push(players[i].parentLastName2 ? players[i].parentLastName2 : null);
+        tempArray.push(players[i].phoneNumber2 ? players[i].phoneNumber2 : null);
+        tempArray.push(players[i].email2 || /@/.test(players[i].email2) ? players[i].email2 : null);
+        tempArray.push(players[i].emgFirstName);
+        tempArray.push(players[i].emgLastName);
+        tempArray.push(players[i].emgPhoneNumber);
+        tempArray.push(players[i].emgEmail || /@/.test(players[i].emgEmail) ? players[i].emgEmail : null);
         tempArray.push("NOW()");
         tempArray.push("NOW()");
         queryData2.push(tempArray);
