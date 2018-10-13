@@ -6,7 +6,8 @@ module.exports = async (req, res) => {
       queryData   = [];
 
   query = `SELECT HEX(players.id) id, HEX(players.teamId) teamId, firstName, lastName, teamNumber, birthday, position,
-    position2, catcher, pitcher, throwingArm, battingArm, emgPhoneNumber, emgEmail, emgFirstName, emgLastName,
+    position2, catcher, pitcher, throwingArm, battingArm, phoneNumber, email, parentFirstName, parentLastName,
+    phoneNumber2, email2, parentFirstName2, parentLastName2, emgPhoneNumber, emgEmail, emgFirstName, emgLastName,
     players.createdAt createdAt, players.updatedAt updatedAt FROM players LEFT JOIN userTeams ON players.teamId =
     userTeams.teamId WHERE userId = UNHEX(?) ORDER BY players.updatedAt DESC LIMIT 10`;
 
