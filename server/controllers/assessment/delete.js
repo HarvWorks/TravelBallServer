@@ -5,14 +5,14 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  if (!req.body.playerIds || !req.body.playerIds[0] || !req.body.tryoutId)
+  if (!req.query.playerId || !req.query.tryoutId)
     return res.status(400).json({ message: "missingFields"  });
 
-  query = `DELETE FROM assestments WHERE tryoutId = ? AND playerId IN ?`
+  query = `DELETE FROM assestments WHERE tryoutId = ? AND playerId = ?`
 
-  queryData = [ req.body.tryoutId, req.user.id, req.body.playerId ];
+  queryData = [ req.query.tryoutId, req.user.id, req.query.playerId ];
 
-  query2 = `UPDATE tryouts SET numberPlayers = numberPlayers + 1 WHERE tryoutId = UNHEX(?)`;
+  query2 = `UPDATE tryouts SET numberPlayers = numberPlayers - 1 WHERE tryoutId = UNHEX(?)`;
 
   queryData2  = [ req.body.tryoutId ];
 

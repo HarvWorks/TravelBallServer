@@ -10,16 +10,16 @@ module.exports = async (req, res) => {
       queryData2  = [],
       id          = '';
 
-  if (!req.body.userId || !req.body.tryoutId)
+  if (!req.query.userId || !req.query.tryoutId)
     return res.status(400).json({ message: "missingFields" });
 
   query = `DELETE FROM tryoutCoaches WHERE tryoutId = UNHEX(?) AND userId = UNHEX(?)`;
 
-  queryData = [ req.body.tryoutId, req.body.userId ];
+  queryData = [ req.query.tryoutId, req.query.userId ];
 
   query2 = `UPDATE tryouts SET numberCoaches = numberCoaches - 1 WHERE tryoutId = UNHEX(?)`;
 
-  queryData2  = [ req.body.tryoutId ];
+  queryData2  = [ req.query.tryoutId ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(() => Promise.using(getConnection(), connection => connection.execute(query2, queryData2)))

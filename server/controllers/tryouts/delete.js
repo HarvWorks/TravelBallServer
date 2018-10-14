@@ -5,12 +5,12 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  if (!req.body.tryoutId)
+  if (!req.query.tryoutId)
     return res.status(400).json({ message: "missingFields"  });
 
   query = `DELETE FROM tryouts WHERE id = UNHEX(?) AND userId = UNHEX(?) LIMIT 1`
 
-  queryData = [ req.body.tryoutId, req.user.id];
+  queryData = [ req.query.tryoutId, req.user.id];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.end())

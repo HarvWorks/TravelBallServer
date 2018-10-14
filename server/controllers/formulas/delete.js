@@ -5,12 +5,12 @@ module.exports = async (req, res) => {
   let query       = ``,
       queryData   = [];
 
-  if (!req.body.formulaId)
+  if (!req.query.formulaId)
     return res.status(400).json({ message: "missingFields"  });
 
   query = `DELETE FROM formulas WHERE userId = UNHEX(?) AND id = UNHEX(?) LIMIT 1`
 
-  queryData = [ req.user.id, req.body.formulaId ];
+  queryData = [ req.user.id, req.query.formulaId ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.end())
