@@ -91,12 +91,8 @@ module.exports = async (req, res) => {
   queryData.push(req.user.id);
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
-    .then(data => {
-      console.log(data);
-      return res.end()
-    })
+    .then(data => res.end())
     .catch(error => {
-      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });
