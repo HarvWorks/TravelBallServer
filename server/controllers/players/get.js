@@ -22,6 +22,8 @@ module.exports = async (req, res) => {
     tryouts ON assestments.tryoutId = tryouts.id LEFT JOIN tryoutCoaches ON tryouts.id = tryoutCoaches.tryoutId WHERE
     tryoutCoaches.userId = UNHEX(?) AND assestments.playerId = UNHEX(?)`;
 
+    console.log('get user', req.params.id);
+
   queryData = [ req.user.id, req.params.id ];
 
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
@@ -33,6 +35,7 @@ module.exports = async (req, res) => {
       if (results[0] && results[0].id) {
         results[0].assessment = data
       }
+      console.log(results[0]);
       return res.status(200).json(results[0])
     })
     .catch(error => {

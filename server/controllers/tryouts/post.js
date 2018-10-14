@@ -63,8 +63,8 @@ module.exports = async (req, res) => {
   }
 
   query = `INSERT INTO tryouts SET id = ?, teamId = UNHEX(?), userId = UNHEX(?), formulaId = UNHEX(?), name = ?,
-    street = ?, city = ?, state = ?, zip = ?, country = ?, date = ?, started = ?, numberPlayers = ?,
-    createdAt = NOW(), updatedAt = NOW()`;
+    ballParkLocation = ?, ballParkNotes = ?, street = ?, city = ?, state = ?, zip = ?, country = ?, date = ?,
+    started = ?, numberPlayers = ?, createdAt = NOW(), updatedAt = NOW()`;
 
   queryData = [
     id,

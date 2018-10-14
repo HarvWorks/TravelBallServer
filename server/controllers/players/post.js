@@ -21,8 +21,8 @@ module.exports = async (req, res) => {
   query = `SELECT teamId, coachType FROM userTeams WHERE userId = UNHEX(?) AND teamId = UNHEX(?)`;
 
   query2 = `INSERT INTO players (id, teamId, firstName, lastName, teamNumber, birthday, position, position2, pitcher,
-    catcher, throwingArm, battingArm, phoneNumber, email, parentFirstName, parentLastName, phoneNumber2, email2,
-    parentFirstName2, parentLastName2, emgPhoneNumber, emgEmail, emgFirstName, emgLastName, createdAt, updatedAt) VALUES ?`
+    catcher, throwingArm, battingArm, parentFirstName, parentLastName, phoneNumber, email, parentFirstName2, parentLastName2,
+    phoneNumber2, email2, emgFirstName, emgLastName, emgPhoneNumber, emgEmail, createdAt, updatedAt) VALUES ?`
 
   queryData = [
     req.user.id,
