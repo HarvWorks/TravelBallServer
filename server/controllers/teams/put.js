@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
   if (!queryAdded)
     return res.status(200).json({ message: "emptyFields" });
 
-  query += `, updatedAt = NOW() WHERE id = (SELECT teamId FROM coaches WHERE userId = UNHEX(?) AND teamId = UNHEX(?) AND
+  query += `, updatedAt = NOW() WHERE id = (SELECT teamId FROM userTeams WHERE userId = UNHEX(?) AND teamId = UNHEX(?) AND
     coachType > 99 LIMIT 1) LIMIT 1`;
 
   queryData.push(req.user.id);
@@ -69,6 +69,7 @@ module.exports = async (req, res) => {
   Promise.using(getConnection(), connection => connection.execute(query, queryData))
     .then(data => res.end())
     .catch(error => {
+      console.log(error);
       if (error.status)
         return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: "admin", error: error });
